@@ -5,30 +5,25 @@ buildscript {
 		maven { url "https://repo.sleeping.town" } //Commented out to use the version of voldeloom in the settings.gradle includeBuild (hopefully??)
 	}
 	dependencies {
-		classpath "agency.highlysuspect:voldeloom:2.4-SNAPSHOT"
+		classpath "agency.highlysuspect:voldeloom:2.2-SNAPSHOT"
 	}
 }
 
 apply plugin: "agency.highlysuspect.voldeloom"
 
-java {
-	toolchain {
-		//Last version able to set a --release as low as 6.
-		languageVersion = JavaLanguageVersion.of(11)
-	}
-}
+java.toolchain.languageVersion = JavaLanguageVersion.of(11) //Last version able to set a --release as low as 6
+compileJava.options.release.set(6) //Forge doesn't understand classes compiled to versions of the class-file format newer than Java 6's
 
-compileJava {
-	//Forge doesn't understand classes compiled to versions of the class-file format newer than Java 6's.
-	options.release.set(6)
-}
-
-String minecraftVersion = project.minecraft
-String forgeVersion = project.minecraft_forge
+String minecraftVersion = "1.4.7"
+String forgeVersion = "1.4.7-6.6.2.534"
 archivesBaseName = project.modid
 version = project.mod_version
 
 volde {
+	forgeCapabilities {
+		srgsAsFallback = true
+	}
+
 	runs {
 		client {
 			programArg "quaternary"
@@ -39,8 +34,16 @@ volde {
 dependencies {
 	minecraft "com.mojang:minecraft:${minecraftVersion}"
 	forge "net.minecraftforge:forge:${forgeVersion}:universal@zip"
-	mappings "net.minecraftforge:forge:${forgeVersion}:src@zip"
-	
-	//coremodImplementation files("../dep_testin/ears-forge-1.4-1.4.5_01.jar")
-	//modImplementation files("../dep_testin/buildcraft-A-1.4.7-3.4.4.jar")
+
+	mappings volde.layered {
+		baseZip "net.minecraftforge:forge:${forgeVersion}:src@zip"
+		unmapClass(["bar", "bas"])
+	}
+
+	//accessTransformers files("./src/main/resources/good_cool_ats.cfg")
+
+	//coremodImplementation files("libs/name.jar")
+	//coremodImplementation files("libs/name.zip")
+	//modImplementation files("libs/name.jar")
+	//modImplementation files("libs/name.zip")
 }

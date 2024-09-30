@@ -47,7 +47,7 @@ public class HarvestEvent {
             int stage = world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
             if (stage == 7) {
                 drops = crop.getBlockDropped(world, pos.x, pos.y, pos.z, stage, 0);
-                world.setBlockMetadataWithNotify(pos.x, pos.y, pos.z, 1, 2);
+                world.setBlockMetadataWithNotify(pos.x, pos.y, pos.z, 1);
                 harvest = true;
             }
         }
