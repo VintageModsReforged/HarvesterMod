@@ -25,18 +25,17 @@ public class HarvestEvent {
     @ForgeSubscribe
     public void onRightClick(PlayerInteractEvent e) {
         if (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
-            BlockPos pos = new BlockPos(e.x, e.y, e.z);
             EntityPlayer player = e.entityPlayer;
-            if (harvest(player, pos)) {
+            if (harvest(player, e.x, e.y, e.z)) {
                 e.setResult(Event.Result.ALLOW);
                 e.setCanceled(true);
             }
         }
     }
 
-    public boolean harvest(EntityPlayer player, BlockPos pos) {
+    public boolean harvest(EntityPlayer player, int x, int y, int z) {
         World world = player.worldObj;
-        Block clickedBlock = Block.blocksList[world.getBlockId(pos.getX(), pos.getY(), pos.getZ())];
+        Block clickedBlock = Block.blocksList[world.getBlockId(x, y, z)];
         boolean harvest = false;
         if (world.isRemote) {
             return false;
@@ -45,19 +44,19 @@ public class HarvestEvent {
         List<ItemStack> drops = new ArrayList<ItemStack>();
         if (clickedBlock instanceof BlockCrops) {
             BlockCrops crop = (BlockCrops) clickedBlock;
-            int stage = world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
+            int stage = world.getBlockMetadata(x, y, z);
             if (stage == 7) {
-                drops = crop.getBlockDropped(world, pos.x, pos.y, pos.z, stage, 0);
-                world.setBlockMetadataWithNotify(pos.x, pos.y, pos.z, 1);
+                drops = crop.getBlockDropped(world, x, y, z, stage, 0);
+                world.setBlockMetadataWithNotify(x, y, z, 1);
                 harvest = true;
             }
         }
         if (clickedBlock instanceof BlockCocoa) {
             BlockCocoa cocoa = (BlockCocoa) clickedBlock;
-            int stage = world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
+            int stage = world.getBlockMetadata(x, y, z);
             if (stage == 8) {
-                drops = cocoa.getBlockDropped(world, pos.x, pos.y, pos.z, stage, 0);
-                world.setBlockMetadataWithNotify(pos.x, pos.y, pos.z, 0);
+                drops = cocoa.getBlockDropped(world, x, y, z, stage, 0);
+                world.setBlockMetadataWithNotify(x, y, z, 0);
                 harvest = true;
             }
         }
@@ -65,7 +64,7 @@ public class HarvestEvent {
         if (!drops.isEmpty()) {
             Random random = new Random();
             MovingObjectPosition mop = raytraceFromEntity(world, player, false, 4.5D);
-            ItemStack plantable = clickedBlock.getPickBlock(mop, world, pos.x, pos.y, pos.z);
+            ItemStack plantable = clickedBlock.getPickBlock(mop, world, x, y, z);
             for (ItemStack drop : drops) {
                 if (drop == plantable) {
                     drop.stackSize--;
@@ -74,7 +73,7 @@ public class HarvestEvent {
                     continue;
                 }
 
-                EntityItem dropItem = entityDropItem(drop, world, pos, 0.5F);
+                EntityItem dropItem = entityDropItem(drop, world, x, y, z, 0.5F);
                 dropItem.motionY += random.nextFloat() * 0.05F;
                 dropItem.motionX += (random.nextFloat() - random.nextFloat()) * 0.1F;
                 dropItem.motionZ += (random.nextFloat() - random.nextFloat()) * 0.1F;
@@ -83,34 +82,11 @@ public class HarvestEvent {
         return harvest;
     }
 
-    public EntityItem entityDropItem(ItemStack drop, World world, BlockPos pos, float offset) {
-        EntityItem entityitem = new EntityItem(world, pos.x, pos.y + (double)offset, pos.z, drop);
+    public EntityItem entityDropItem(ItemStack drop, World world, int x, int y, int z, float offset) {
+        EntityItem entityitem = new EntityItem(world, x, y + (double) offset, z, drop);
         entityitem.delayBeforeCanPickup = 10;
         world.spawnEntityInWorld(entityitem);
         return entityitem;
-    }
-
-    public static class BlockPos {
-
-        int x, y, z;
-
-        public BlockPos(int x, int y, int z) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-
-        public int getX() {
-            return this.x;
-        }
-
-        public int getY() {
-            return this.y;
-        }
-
-        public int getZ() {
-            return this.z;
-        }
     }
 
     public static MovingObjectPosition raytraceFromEntity(World world, Entity player, boolean checkFluid, double range) {
