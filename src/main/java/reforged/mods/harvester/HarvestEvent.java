@@ -1,6 +1,7 @@
 package reforged.mods.harvester;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockCocoa;
 import net.minecraft.block.BlockCrops;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
@@ -48,6 +49,15 @@ public class HarvestEvent {
             if (stage == 7) {
                 drops = crop.getBlockDropped(world, pos.x, pos.y, pos.z, stage, 0);
                 world.setBlockMetadataWithNotify(pos.x, pos.y, pos.z, 1, 2);
+                harvest = true;
+            }
+        }
+        if (clickedBlock instanceof BlockCocoa) {
+            BlockCocoa cocoa = (BlockCocoa) clickedBlock;
+            int stage = world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
+            if (stage == 8) {
+                drops = cocoa.getBlockDropped(world, pos.x, pos.y, pos.z, stage, 0);
+                world.setBlockMetadataWithNotify(pos.x, pos.y, pos.z, 0, 2);
                 harvest = true;
             }
         }
