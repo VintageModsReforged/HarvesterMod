@@ -44,7 +44,7 @@ public class HarvestEvent {
 
         List<ItemStack> drops = new ArrayList<ItemStack>();
         // performing double check because Natura's cotton uses stages from 4 to 8
-        if (clickedBlock instanceof BlockCrops && !(clickedBlock instanceof mods.natura.blocks.crops.CropBlock)) { // only vanilla
+        if (clickedBlock instanceof BlockCrops && !isInstanceOf(clickedBlock, "mods.natura.blocks.crops.CropBlock")) { // only vanilla
             BlockCrops crop = (BlockCrops) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
             if (stage == 7) {
@@ -53,7 +53,7 @@ public class HarvestEvent {
                 harvest = true;
             }
         }
-        if (Loader.isModLoaded("Natura") && clickedBlock instanceof mods.natura.blocks.crops.CropBlock) { // Natura
+        if (Loader.isModLoaded("Natura") && isInstanceOf(clickedBlock, "mods.natura.blocks.crops.CropBlock")) { // Natura
             mods.natura.blocks.crops.CropBlock crop = (mods.natura.blocks.crops.CropBlock) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
             if (stage == 3) {
@@ -98,6 +98,17 @@ public class HarvestEvent {
         entityitem.delayBeforeCanPickup = 10;
         world.spawnEntityInWorld(entityitem);
         return entityitem;
+    }
+
+    public static boolean isInstanceOf(Object obj, String clazz) {
+        if (obj == null)
+            return false;
+        try {
+            Class<?> c = Class.forName(clazz);
+            if (c.isInstance(obj))
+                return true;
+        } catch (Throwable ignored) {}
+        return false;
     }
 
     public static MovingObjectPosition raytraceFromEntity(World world, Entity player, boolean checkFluid, double range) {
