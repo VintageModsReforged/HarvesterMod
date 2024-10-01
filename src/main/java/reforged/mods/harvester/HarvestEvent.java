@@ -1,18 +1,14 @@
 package reforged.mods.harvester;
 
+import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockCocoa;
 import net.minecraft.block.BlockCrops;
 import net.minecraft.block.BlockPotato;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeSubscribe;
@@ -38,7 +34,7 @@ public class HarvestEvent {
         World world = player.worldObj;
         Block clickedBlock = Block.blocksList[world.getBlockId(x, y, z)];
         boolean harvest = false;
-        if (world.isRemote) {
+        if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
             return false;
         }
 
@@ -110,8 +106,7 @@ public class HarvestEvent {
                 newDrops.add(new ItemStack(Item.itemsList[id], sortedDropsStacks.get(id), meta));
             }
 
-            MovingObjectPosition mop = raytraceFromEntity(world, player, false, 4.5D);
-            ItemStack plantable = clickedBlock.getPickBlock(mop, world, x, y, z);
+            ItemStack plantable = getPickBlock(world, x, y, z);
             for (ItemStack drop : newDrops) {
                 if (drop.isItemEqual(plantable) || ((drop.itemID == Item.potato.itemID || drop.itemID == Item.carrot.itemID) && drop.stackSize > 1)) {
                     drop.stackSize--;
@@ -136,28 +131,34 @@ public class HarvestEvent {
         return entityitem;
     }
 
-    public static MovingObjectPosition raytraceFromEntity(World world, Entity player, boolean checkFluid, double range) {
-        float f = 1.0F;
-        float f1 = player.prevRotationPitch + (player.rotationPitch - player.prevRotationPitch) * f;
-        float f2 = player.prevRotationYaw + (player.rotationYaw - player.prevRotationYaw) * f;
-        double d0 = player.prevPosX + (player.posX - player.prevPosX) * f;
-        double d1 = player.prevPosY + (player.posY - player.prevPosY) * f;
-        if ((!world.isRemote) && ((player instanceof EntityPlayer))) {
-            d1 += 1.62D;
+    public ItemStack getPickBlock(World world, int x, int y, int z) {
+        int id = world.getBlockId(x, y, z);
+        Block block = Block.blocksList[id];
+        if (id == 0) {
+            return null;
+        } else {
+            Item item = Item.itemsList[id];
+            return item == null ? null : new ItemStack(id, 1, block.getDamageValue(world, x, y, z));
         }
-        double d2 = player.prevPosZ + (player.posZ - player.prevPosZ) * f;
-        Vec3 vec3 = Vec3.createVectorHelper(d0, d1, d2);
-        float f3 = MathHelper.cos(-f2 * 0.017453292F - 3.1415927F);
-        float f4 = MathHelper.sin(-f2 * 0.017453292F - 3.1415927F);
-        float f5 = -MathHelper.cos(-f1 * 0.017453292F);
-        float f6 = MathHelper.sin(-f1 * 0.017453292F);
-        float f7 = f4 * f5;
-        float f8 = f3 * f5;
-        double d3 = range;
-        if ((player instanceof EntityPlayerMP)) {
-            d3 = ((EntityPlayerMP) player).theItemInWorldManager.getBlockReachDistance();
+    }
+
+    /**
+     * For potential compat purposes
+     * Checks if the given class is currently loaded and the given object is instance of that class.
+     *
+     * @param obj   The object to check if it is an instance of a class.
+     * @param clazz The fully qualified class name.
+     * @return Whether the given class is loaded and the given object is instance of that class.
+     */
+    public static boolean isLoadedAndInstanceOf(Object obj, String clazz) {
+        if (obj == null)
+            return false;
+        try {
+            Class<?> c = Class.forName(clazz);
+            if (c.isInstance(obj))
+                return true;
+        } catch (Throwable ignored) {
         }
-        Vec3 vec31 = vec3.addVector(f7 * d3, f6 * d3, f8 * d3);
-        return world.rayTraceBlocks_do_do(vec3, vec31, checkFluid, !checkFluid);
+        return false;
     }
 }
