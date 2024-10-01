@@ -1,9 +1,7 @@
 package reforged.mods.harvester;
 
 import cpw.mods.fml.common.Loader;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockCocoa;
-import net.minecraft.block.BlockCrops;
+import net.minecraft.block.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
@@ -34,7 +32,7 @@ public class HarvestEvent {
     }
 
     public boolean harvest(EntityPlayer player, int x, int y, int z) {
-
+        Random random = new Random();
         World world = player.worldObj;
         Block clickedBlock = Block.blocksList[world.getBlockId(x, y, z)];
         boolean harvest = false;
@@ -50,6 +48,11 @@ public class HarvestEvent {
             int stage = world.getBlockMetadata(x, y, z);
             if (stage == 7) {
                 drops = crop.getBlockDropped(world, x, y, z, stage, 0);
+                if (crop instanceof BlockPotato) {
+                    if (random.nextInt(50) == 0) {
+                        drops.add(new ItemStack(Item.poisonousPotato));
+                    }
+                }
                 world.setBlockMetadataWithNotify(x, y, z, 1, 2);
                 harvest = true;
             }
@@ -66,9 +69,33 @@ public class HarvestEvent {
         if (clickedBlock instanceof BlockCocoa) {
             BlockCocoa cocoa = (BlockCocoa) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
-            if (stage == 8) {
+            int direction = BlockCocoa.getDirection(stage);
+            int maxStage = 0;
+            int minStage = 0;
+            switch (direction) {
+                case 1:
+                    maxStage = 9;
+                    minStage = 1;
+                    break;
+                case 2:
+                    maxStage = 10;
+                    minStage = 2;
+                    break;
+                case 3:
+                    maxStage = 11;
+                    minStage = 3;
+                    break;
+                case 0:
+                    maxStage = 8;
+                    minStage = 0;
+                    break;
+            }
+
+            if (stage == maxStage) {
                 drops = cocoa.getBlockDropped(world, x, y, z, stage, 0);
-                world.setBlockMetadataWithNotify(x, y, z, 0, 2);
+                int newDirection = BlockCocoa.getDirection(minStage);
+                int extra = BlockCocoa.func_72219_c(minStage);
+                world.setBlockMetadataWithNotify(x, y, z, extra << 2 | newDirection, 2);
                 harvest = true;
             }
         }
@@ -82,14 +109,18 @@ public class HarvestEvent {
                 }
             }
             List<ItemStack> newDrops = new ArrayList<ItemStack>();
+            int meta = 0;
             for (Integer id : sortedDropsStacks.keySet()) {
-                newDrops.add(new ItemStack(Item.itemsList[id], sortedDropsStacks.get(id)));
+                if (id == Item.dyePowder.itemID) { // cocoa
+                    meta = 3;
+                }
+                newDrops.add(new ItemStack(Item.itemsList[id], sortedDropsStacks.get(id), meta));
             }
-            Random random = new Random();
+
             MovingObjectPosition mop = raytraceFromEntity(world, player, false, 4.5D);
             ItemStack plantable = clickedBlock.getPickBlock(mop, world, x, y, z);
             for (ItemStack drop : newDrops) {
-                if (drop.isItemEqual(plantable)) {
+                if (drop.isItemEqual(plantable) || ((drop.itemID == Item.potato.itemID || drop.itemID == Item.carrot.itemID) && drop.stackSize > 1)) {
                     drop.stackSize--;
                 }
                 if (drop.stackSize == 0) {
