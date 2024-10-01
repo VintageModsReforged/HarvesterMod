@@ -7,6 +7,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
@@ -16,9 +17,7 @@ import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class HarvestEvent {
 
@@ -42,6 +41,7 @@ public class HarvestEvent {
         }
 
         List<ItemStack> drops = new ArrayList<ItemStack>();
+        Map<Integer, Integer> sortedDropsStacks = new HashMap<Integer, Integer>();
         if (clickedBlock instanceof BlockCrops) {
             BlockCrops crop = (BlockCrops) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
@@ -62,11 +62,22 @@ public class HarvestEvent {
         }
 
         if (!drops.isEmpty()) {
+            for (ItemStack drop : drops) {
+                if (sortedDropsStacks.containsKey(drop.itemID)) {
+                    sortedDropsStacks.put(drop.itemID, sortedDropsStacks.get(drop.itemID) + 1);
+                } else {
+                    sortedDropsStacks.put(drop.itemID, drop.stackSize);
+                }
+            }
+            List<ItemStack> newDrops = new ArrayList<ItemStack>();
+            for (Integer id : sortedDropsStacks.keySet()) {
+                newDrops.add(new ItemStack(Item.itemsList[id], sortedDropsStacks.get(id)));
+            }
             Random random = new Random();
             MovingObjectPosition mop = raytraceFromEntity(world, player, false, 4.5D);
             ItemStack plantable = clickedBlock.getPickBlock(mop, world, x, y, z);
-            for (ItemStack drop : drops) {
-                if (drop == plantable) {
+            for (ItemStack drop : newDrops) {
+                if (drop.isItemEqual(plantable)) {
                     drop.stackSize--;
                 }
                 if (drop.stackSize == 0) {
