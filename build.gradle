@@ -24,9 +24,17 @@ volde {
 		srgsAsFallback = true
 	}
 
+	jar {
+		manifest {
+			attributes 'FMLCorePlugin' : 'reforged.mods.harvester.asm.LeafDecayPlugin'
+			attributes 'FMLCorePluginContainsFMLMod': 'true'
+		}
+	}
+
 	runs {
 		client {
 			programArg "quaternary"
+			programArg "-Dfml.coreMods.load=reforged.mods.harvester.asm.LeafDecayPlugin"
 		}
 	}
 }
