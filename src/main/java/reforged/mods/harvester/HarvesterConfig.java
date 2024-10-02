@@ -6,7 +6,7 @@ import net.minecraftforge.common.Property;
 
 import java.io.File;
 
-public class HarvessterConfig {
+public class HarvesterConfig {
 
     public static Configuration CONFIG;
 
