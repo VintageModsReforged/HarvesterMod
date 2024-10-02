@@ -19,6 +19,6 @@ public class HarvesterMod {
 
     @Mod.PreInit
     public void preInit(FMLPreInitializationEvent e) {
-        HarvessterConfig.init();
+        HarvesterConfig.init();
     }
 }
