@@ -34,6 +34,12 @@ volde {
 			programArg "quaternary"
 		}
 	}
+	jar {
+		manifest {
+			attributes 'FMLCorePlugin' : 'reforged.mods.harvester.asm.LeafDecayPlugin'
+			attributes 'FMLCorePluginContainsFMLMod': 'true'
+		}
+	}
 }
 
 dependencies {
