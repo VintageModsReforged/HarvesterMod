@@ -21,7 +21,7 @@ public class TreeHarvestEvent {
 
     public void onBlockHarvested(World world, int x, int y, int z, Block block, int metadata, EntityPlayer player) {
         ItemStack heldStack = player.getHeldItem();
-        if (canHarvest(player, heldStack, block, metadata)) {
+        if (heldStack != null && canHarvest(player, heldStack, block, metadata)) {
             BlockPos origin = new BlockPos(x, y, z);
             int maxCount = HarvesterConfig.CAPITATOR_MAX_COUNT;
             LinkedList<BlockPos> connectedLogs = scanForTree(world, origin, player.isSneaking() ? 0 : maxCount);
