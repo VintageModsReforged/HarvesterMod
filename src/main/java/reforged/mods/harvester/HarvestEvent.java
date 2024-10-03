@@ -1,8 +1,10 @@
 package reforged.mods.harvester;
 
-import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockCocoa;
+import net.minecraft.block.BlockCrops;
+import net.minecraft.block.BlockPotato;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -32,14 +34,14 @@ public class HarvestEvent {
         World world = player.worldObj;
         Block clickedBlock = Block.blocksList[world.getBlockId(x, y, z)];
         boolean harvest = false;
-        if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
+        if (Utils.isRendering()) {
             return false;
         }
 
         List<ItemStack> drops = new ArrayList<ItemStack>();
         Map<Integer, Integer> sortedDropsStacks = new HashMap<Integer, Integer>();
         // performing double check because Natura's cotton uses stages from 4 to 8
-        if (clickedBlock instanceof BlockCrops && !isLoadedAndInstanceOf(clickedBlock, "mods.natura.blocks.crops.CropBlock")) { // only vanilla
+        if (clickedBlock instanceof BlockCrops && !Utils.isInstanceOf(clickedBlock, "mods.natura.blocks.crops.CropBlock")) { // only vanilla
             BlockCrops crop = (BlockCrops) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
             if (stage == 7) {
@@ -113,7 +115,7 @@ public class HarvestEvent {
                 newDrops.add(new ItemStack(Item.itemsList[id], sortedDropsStacks.get(id), meta));
             }
 
-            ItemStack plantable = getPickBlock(world, x, y, z);
+            ItemStack plantable = Utils.getPickBlock(world, x, y, z);
             for (ItemStack drop : newDrops) {
                 if (drop.isItemEqual(plantable) || ((drop.itemID == Item.potato.itemID || drop.itemID == Item.carrot.itemID) && drop.stackSize > 1)) {
                     drop.stackSize--;
@@ -121,50 +123,12 @@ public class HarvestEvent {
                 if (drop.stackSize == 0) {
                     continue;
                 }
-                EntityItem dropItem = entityDropItem(drop, world, x, y, z, 0.5F);
+                EntityItem dropItem = Utils.dropItem(drop, world, x, y, z, 0.5F);
                 dropItem.motionY += random.nextFloat() * 0.05F;
                 dropItem.motionX += (random.nextFloat() - random.nextFloat()) * 0.1F;
                 dropItem.motionZ += (random.nextFloat() - random.nextFloat()) * 0.1F;
             }
         }
         return harvest;
-    }
-
-    public EntityItem entityDropItem(ItemStack drop, World world, int x, int y, int z, float offset) {
-        EntityItem entityitem = new EntityItem(world, x, y + (double) offset, z, drop);
-        entityitem.delayBeforeCanPickup = 10;
-        world.spawnEntityInWorld(entityitem);
-        return entityitem;
-    }
-
-    public ItemStack getPickBlock(World world, int x, int y, int z) {
-        int id = world.getBlockId(x, y, z);
-        Block block = Block.blocksList[id];
-        if (id == 0) {
-            return null;
-        } else {
-            Item item = Item.itemsList[id];
-            return item == null ? null : new ItemStack(id, 1, block.getDamageValue(world, x, y, z));
-        }
-    }
-
-    /**
-     * For potential compat purposes
-     * Checks if the given class is currently loaded and the given object is instance of that class.
-     *
-     * @param obj   The object to check if it is an instance of a class.
-     * @param clazz The fully qualified class name.
-     * @return Whether the given class is loaded and the given object is instance of that class.
-     */
-    public static boolean isLoadedAndInstanceOf(Object obj, String clazz) {
-        if (obj == null)
-            return false;
-        try {
-            Class<?> c = Class.forName(clazz);
-            if (c.isInstance(obj))
-                return true;
-        } catch (Throwable ignored) {
-        }
-        return false;
     }
 }

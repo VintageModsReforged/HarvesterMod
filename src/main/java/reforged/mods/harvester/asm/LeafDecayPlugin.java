@@ -14,7 +14,7 @@ public class LeafDecayPlugin implements IFMLLoadingPlugin {
 
     @Override
     public String[] getASMTransformerClass() {
-        return new String[] { LeafDecayTransformer.class.getName() };
+        return new String[] { LeafDecayTransformer.class.getName(), ItemInWorldManagerTransformer.class.getName() };
     }
 
     @Override
