@@ -50,7 +50,7 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
                         FieldInsnNode blocksListNode = (FieldInsnNode)m.instructions.get(index);
                         if (blocksListNode.owner.equals(hm.get("blockJavaClassName")) && blocksListNode.name.equals(hm.get("blocksListFieldName"))) {
                             int offset = 1;
-                            while (m.instructions.get(index + offset).getOpcode() != 58)
+                            while (m.instructions.get(index + offset).getOpcode() != Opcodes.ASTORE)
                                 offset++;
                             HarvesterMod.LOGGER.info("Found Block object ASTORE Node at " + (index + offset));
                             VarInsnNode blockNode = (VarInsnNode)m.instructions.get(index + offset);
@@ -62,7 +62,7 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
                         MethodInsnNode mdNode = (MethodInsnNode)m.instructions.get(index);
                         if (mdNode.owner.equals(hm.get("worldJavaClassName")) && mdNode.name.equals(hm.get("getBlockMetadataMethodName"))) {
                             int offset = 1;
-                            while (m.instructions.get(index + offset).getOpcode() != 54)
+                            while (m.instructions.get(index + offset).getOpcode() != Opcodes.ISTORE)
                                 offset++;
                             HarvesterMod.LOGGER.info("Found metadata local variable ISTORE Node at " + (index + offset));
                             VarInsnNode mdFieldNode = (VarInsnNode)m.instructions.get(index + offset);
@@ -70,26 +70,26 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
                             HarvesterMod.LOGGER.info("Metadata is in local variable " + mdIndex);
                         }
                     }
-                    if (m.instructions.get(index).getOpcode() == 198) {
+                    if (m.instructions.get(index).getOpcode() == Opcodes.IFNULL) {
                         HarvesterMod.LOGGER.info("Found IFNULL Node at " + index);
                         int offset = 1;
-                        while (m.instructions.get(index + offset).getOpcode() != 25)
+                        while (m.instructions.get(index + offset).getOpcode() != Opcodes.ALOAD)
                             offset++;
                         HarvesterMod.LOGGER.info("Found ALOAD Node at offset " + offset + " from IFNULL Node");
                         HarvesterMod.LOGGER.info("Patching method " + hm.get("javaClassName") + "/" + m.name + m.desc + "...");
                         LabelNode lmm1Node = new LabelNode(new Label());
                         InsnList toInject = new InsnList();
-                        toInject.add(new FieldInsnNode(178, "reforged/mods/harvester/TreeHarvestEvent", "instance", "Lreforged/mods/harvester/TreeHarvestEvent;"));
-                        toInject.add(new VarInsnNode(25, 0));
-                        toInject.add(new FieldInsnNode(180, hm.get("javaClassName"), hm.get("worldFieldName"), "L" + hm.get("worldJavaClassName") + ";"));
-                        toInject.add(new VarInsnNode(21, 1));
-                        toInject.add(new VarInsnNode(21, 2));
-                        toInject.add(new VarInsnNode(21, 3));
-                        toInject.add(new VarInsnNode(25, blockIndex));
-                        toInject.add(new VarInsnNode(21, mdIndex));
-                        toInject.add(new VarInsnNode(25, 0));
-                        toInject.add(new FieldInsnNode(180, hm.get("javaClassName"), hm.get("entityPlayerFieldName"), "L" + hm.get("entityPlayerMPJavaClassName") + ";"));
-                        toInject.add(new MethodInsnNode(182, "reforged/mods/harvester/TreeHarvestEvent", "onBlockHarvested", "(L" + hm.get("worldJavaClassName") + ";IIIL" + hm.get("blockJavaClassName") + ";IL" + hm.get("entityPlayerJavaClassName") + ";)V"));
+                        toInject.add(new FieldInsnNode(Opcodes.GETSTATIC, "reforged/mods/harvester/TreeHarvestEvent", "instance", "Lreforged/mods/harvester/TreeHarvestEvent;"));
+                        toInject.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                        toInject.add(new FieldInsnNode(Opcodes.GETFIELD, hm.get("javaClassName"), hm.get("worldFieldName"), "L" + hm.get("worldJavaClassName") + ";"));
+                        toInject.add(new VarInsnNode(Opcodes.ILOAD, 1));
+                        toInject.add(new VarInsnNode(Opcodes.ILOAD, 2));
+                        toInject.add(new VarInsnNode(Opcodes.ILOAD, 3));
+                        toInject.add(new VarInsnNode(Opcodes.ALOAD, blockIndex));
+                        toInject.add(new VarInsnNode(Opcodes.ILOAD, mdIndex));
+                        toInject.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                        toInject.add(new FieldInsnNode(Opcodes.GETFIELD, hm.get("javaClassName"), hm.get("entityPlayerFieldName"), "L" + hm.get("entityPlayerMPJavaClassName") + ";"));
+                        toInject.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "reforged/mods/harvester/TreeHarvestEvent", "onBlockHarvested", "(L" + hm.get("worldJavaClassName") + ";IIIL" + hm.get("blockJavaClassName") + ";IL" + hm.get("entityPlayerJavaClassName") + ";)V"));
                         toInject.add(lmm1Node);
                         m.instructions.insertBefore(m.instructions.get(index + offset), toInject);
                         HarvesterMod.LOGGER.info("Method " + hm.get("javaClassName") + "/" + m.name + m.desc + " patched at index " + (index + offset - 1));
