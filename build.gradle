@@ -40,6 +40,8 @@ volde {
 }
 
 dependencies {
+	implementation 'net.jcip:jcip-annotations:1.0'
+	implementation 'org.jetbrains:annotations-java5:24.0.0'
 	minecraft "com.mojang:minecraft:${minecraftVersion}"
 	forge "net.minecraftforge:forge:${forgeVersion}:universal@zip"
 
