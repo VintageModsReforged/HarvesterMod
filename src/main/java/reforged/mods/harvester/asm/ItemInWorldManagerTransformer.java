@@ -33,8 +33,8 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
     }
 
     private byte[] transformItemInWorldManager(byte[] bytes, HashMap<String, String> hm) {
-        HarvesterMod.LOGGER.info("Harvester ASM Magic Time!");
-        HarvesterMod.LOGGER.info("Class Transformation running on " + hm.get("javaClassName") + "...");
+        HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Transforming Classes!");
+        HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Class Transformation running on " + hm.get("javaClassName") + "...");
         ClassNode classNode = new ClassNode();
         ClassReader classReader = new ClassReader(bytes);
         classReader.accept(classNode, 0);
@@ -42,7 +42,7 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
         while (methods.hasNext()) {
             MethodNode m = methods.next();
             if (m.name.equals(hm.get("targetMethodName")) && m.desc.equals("(III)Z")) {
-                HarvesterMod.LOGGER.info("Found target method " + m.name + m.desc + "! Searching for landmarks...");
+                HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Found target method " + m.name + m.desc + "! Searching for landmarks...");
                 int blockIndex = 4;
                 int mdIndex = 5;
                 for (int index = 0; index < m.instructions.size(); index++) {
@@ -52,10 +52,10 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
                             int offset = 1;
                             while (m.instructions.get(index + offset).getOpcode() != Opcodes.ASTORE)
                                 offset++;
-                            HarvesterMod.LOGGER.info("Found Block object ASTORE Node at " + (index + offset));
+                            HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Found Block object ASTORE Node at " + (index + offset));
                             VarInsnNode blockNode = (VarInsnNode)m.instructions.get(index + offset);
                             blockIndex = blockNode.var;
-                            HarvesterMod.LOGGER.info("Block object is in local object " + blockIndex);
+                            HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Block object is in local object " + blockIndex);
                         }
                     }
                     if (m.instructions.get(index).getType() == 5) {
@@ -64,19 +64,19 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
                             int offset = 1;
                             while (m.instructions.get(index + offset).getOpcode() != Opcodes.ISTORE)
                                 offset++;
-                            HarvesterMod.LOGGER.info("Found metadata local variable ISTORE Node at " + (index + offset));
+                            HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Found metadata local variable ISTORE Node at " + (index + offset));
                             VarInsnNode mdFieldNode = (VarInsnNode)m.instructions.get(index + offset);
                             mdIndex = mdFieldNode.var;
-                            HarvesterMod.LOGGER.info("Metadata is in local variable " + mdIndex);
+                            HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Metadata is in local variable " + mdIndex);
                         }
                     }
                     if (m.instructions.get(index).getOpcode() == Opcodes.IFNULL) {
-                        HarvesterMod.LOGGER.info("Found IFNULL Node at " + index);
+                        HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Found IFNULL Node at " + index);
                         int offset = 1;
                         while (m.instructions.get(index + offset).getOpcode() != Opcodes.ALOAD)
                             offset++;
-                        HarvesterMod.LOGGER.info("Found ALOAD Node at offset " + offset + " from IFNULL Node");
-                        HarvesterMod.LOGGER.info("Patching method " + hm.get("javaClassName") + "/" + m.name + m.desc + "...");
+                        HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Found ALOAD Node at offset " + offset + " from IFNULL Node");
+                        HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Patching method " + hm.get("javaClassName") + "/" + m.name + m.desc + "...");
                         LabelNode lmm1Node = new LabelNode(new Label());
                         InsnList toInject = new InsnList();
                         toInject.add(new FieldInsnNode(Opcodes.GETSTATIC, "reforged/mods/harvester/TreeHarvestEvent", "instance", "Lreforged/mods/harvester/TreeHarvestEvent;"));
@@ -92,8 +92,8 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
                         toInject.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "reforged/mods/harvester/TreeHarvestEvent", "onBlockHarvested", "(L" + hm.get("worldJavaClassName") + ";IIIL" + hm.get("blockJavaClassName") + ";IL" + hm.get("entityPlayerJavaClassName") + ";)V"));
                         toInject.add(lmm1Node);
                         m.instructions.insertBefore(m.instructions.get(index + offset), toInject);
-                        HarvesterMod.LOGGER.info("Method " + hm.get("javaClassName") + "/" + m.name + m.desc + " patched at index " + (index + offset - 1));
-                        HarvesterMod.LOGGER.info("Harvester ASM Patching Complete!");
+                        HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Method " + hm.get("javaClassName") + "/" + m.name + m.desc + " patched at index " + (index + offset - 1));
+                        HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Patching Complete!");
                         break;
                     }
                 }

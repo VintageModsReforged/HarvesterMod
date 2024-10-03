@@ -7,7 +7,7 @@ import net.minecraftforge.common.MinecraftForge;
 
 import java.util.logging.Logger;
 
-@Mod(modid = "harvester", name = "Harvester Mod", version = "1.5.2-1.0.3")
+@Mod(modid = "harvester", name = "Harvester Mod", version = "1.5.2-1.0.4")
 public class HarvesterMod {
 
     public static final Logger LOGGER = Logger.getLogger("Harvester Mod");
