@@ -32,6 +32,11 @@ public class TreeHarvestEvent {
                      *  Skip damaging first block, minecraft
                      *  {@link net.minecraft.item.ItemInWorldManager#removeBlock(int, int, int)} already does that
                      */
+                    if (!HarvesterConfig.IGNORE_DURABILITY) {
+                        if (heldStack.getItemDamage() == heldStack.getMaxDamage()) {
+                            break;
+                        }
+                    }
                     if (connectedLogs.indexOf(log) != 0) {
                         heldStack.getItem().onBlockDestroyed(heldStack, world, id, log.getX(), log.getY(), log.getZ(), player);
                     }
