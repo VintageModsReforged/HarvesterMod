@@ -12,6 +12,7 @@ public class HarvesterConfig {
 
     public static int MIN_DECAY_TIME;
     public static int MAX_DECAY_TIME;
+    public static boolean DEBUG;
     public static int CAPITATOR_MAX_COUNT;
     public static boolean TREE_CAPITATOR;
     public static boolean IGNORE_DURABILITY;
@@ -20,6 +21,7 @@ public class HarvesterConfig {
         CONFIG = new Configuration(new File((File) FMLInjectionData.data()[6], "config/harvester.cfg"));
         CONFIG.load();
 
+        DEBUG = getBoolean("debug", "Debug", false, "Enable debug mode. Helps identify block name, class and metadata. Useful for crops and leaves.");
         MIN_DECAY_TIME = getInt("main - decay", "MinimumDecayTime", 0, Integer.MAX_VALUE, 4, "Minimum time in ticks for leaf decay. Must be lower than MaximumDecayTime!");
         MAX_DECAY_TIME = getInt("main - decay", "MaximumDecayTime", 0, Integer.MAX_VALUE, 11, "Maximum time in ticks for leaf decay. Must be higher than MinimumDecayTime!");
         TREE_CAPITATOR = getBoolean("main - capitator", "TreeCapitator", true, "Enable TreeCapitator feature?");

@@ -1,6 +1,7 @@
 package reforged.mods.harvester.asm;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLeavesBase;
 import net.minecraft.world.World;
 import reforged.mods.harvester.HarvesterConfig;
 
@@ -16,7 +17,8 @@ public class LeafDecayHandler {
         int id = world.getBlockId(x, y, z);
         Block block = Block.blocksList[id];
         if (block != null) {
-            if (!block.translateBlockName().toLowerCase().contains("ore berries")) {
+            // TODO: make sure to check this next patch
+            if ((block.isLeaves(world, x, y, z) || block instanceof BlockLeavesBase) && !block.translateBlockName().toLowerCase().contains("ore berries")) { // handle regular blocks marked as leaves
                 world.scheduleBlockUpdate(x, y, z, id, baseDecayTime + rng.nextInt(randomizationTime));
             }
         }

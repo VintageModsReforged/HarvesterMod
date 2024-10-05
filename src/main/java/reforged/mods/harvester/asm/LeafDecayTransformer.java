@@ -5,41 +5,52 @@ import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 import reforged.mods.harvester.HarvesterMod;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class LeafDecayTransformer implements IClassTransformer {
 
-    @Override
-    public byte[] transform(String name, byte[] basicClass) {
-        return name.equals("amy") ? transform(basicClass) : basicClass;
+    private final HashMap<String, String> obfStrings;
+
+    public LeafDecayTransformer() {
+        this.obfStrings = new HashMap<String, String>();
+        this.obfStrings.put("blockClassName", "amq"); // net.minecraft.block.Block
+        this.obfStrings.put("methodName", "a"); // onNeighborBlockChange
     }
 
-    private byte[] transform(byte[] basicClass) {
-        HarvesterMod.LOGGER.info("Patching Leaves Block!");
-        ClassNode node = new ClassNode();
-        ClassReader reader = new ClassReader(basicClass);
-        reader.accept(node, 0);
-        ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-        node.accept(writer);
-        // onNeighborBlockChange
-        MethodVisitor methodVisitor = writer.visitMethod(Opcodes.ACC_PUBLIC, "a", "(Lyc;IIII)V", null, null);
-        methodVisitor.visitVarInsn(Opcodes.ALOAD, 1); // Load 'world'
-        methodVisitor.visitVarInsn(Opcodes.ILOAD, 2); // Load 'x'
-        methodVisitor.visitVarInsn(Opcodes.ILOAD, 3); // Load 'y'
-        methodVisitor.visitVarInsn(Opcodes.ILOAD, 4); // Load 'z'
-        methodVisitor.visitMethodInsn(Opcodes.INVOKESTATIC, "reforged/mods/harvester/asm/LeafDecayHandler", "handleLeafDecay", "(Lyc;III)V");
-        Label label0 = new Label();
-        methodVisitor.visitLabel(label0);
-        methodVisitor.visitLineNumber(640, label0);
-        methodVisitor.visitInsn(Opcodes.RETURN);
-        Label label1 = new Label();
-        methodVisitor.visitLabel(label1);
-        methodVisitor.visitLocalVariable("this", "Lreforged/mods/harvester/asm/LeafDecayTransformer;", null, label0, label1, 0);
-        methodVisitor.visitLocalVariable("par1World", "Lnet/minecraft/world/World;", null, label0, label1, 1);
-        methodVisitor.visitLocalVariable("par2", "I", null, label0, label1, 2);
-        methodVisitor.visitLocalVariable("par3", "I", null, label0, label1, 3);
-        methodVisitor.visitLocalVariable("par4", "I", null, label0, label1, 4);
-        methodVisitor.visitLocalVariable("par5", "I", null, label0, label1, 5);
-        methodVisitor.visitMaxs(0, 6);
-        methodVisitor.visitEnd();
+    @Override
+    public byte[] transform(String obfName, byte[] basicClass) {
+        return obfName.equals("amq") ? transform(basicClass, this.obfStrings) : basicClass;
+    }
+
+    public byte[] transform(byte[] basicClass, Map<String, String> names) {
+        HarvesterMod.LOGGER.info("[Leaf Decay - ASM] Transforming Classes!");
+        HarvesterMod.LOGGER.info("[Leaf Decay - ASM] Class Transformation running on " + names.get("blockClassName") + "...");
+        ClassNode classNode = new ClassNode();
+        ClassReader classReader = new ClassReader(basicClass);
+        classReader.accept(classNode, 0);
+        List<MethodNode> methods = classNode.methods;
+        for (MethodNode methodNode : methods) {
+            if (methodNode.name.equals(names.get("methodName")) && methodNode.desc.equals("(Lyc;IIII)V")) {
+                HarvesterMod.LOGGER.info("[Leaf Decay - ASM] Found target method " + methodNode.name + methodNode.desc + "! Searching for landmarks...");
+                HarvesterMod.LOGGER.info("[Leaf Decay - ASM] Patching method " + names.get("blockClassName") + "/" + methodNode.name + methodNode.desc + "...");
+                LabelNode lmm1Node = new LabelNode(new Label());
+                InsnList toInject = new InsnList();
+                toInject.add(new VarInsnNode(Opcodes.ALOAD, 1));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 2));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 3));
+                toInject.add(new VarInsnNode(Opcodes.ILOAD, 4));
+                toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "reforged/mods/harvester/asm/LeafDecayHandler", "handleLeafDecay", "(Lyc;III)V"));
+                toInject.add(lmm1Node);
+                methodNode.instructions.insert(toInject);
+                HarvesterMod.LOGGER.info("[Leaf Decay - ASM] Method " + names.get("blockClassName") + "/" + methodNode.name + methodNode.desc + " patched!");
+                HarvesterMod.LOGGER.info("[Leaf Decay - ASM] Patching Complete!");
+                break;
+            }
+        }
+        ClassWriter writer = new ClassWriter(1);
+        classNode.accept(writer);
         return writer.toByteArray();
     }
 }
