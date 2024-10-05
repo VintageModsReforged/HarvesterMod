@@ -1,10 +1,7 @@
 package reforged.mods.harvester;
 
 import cpw.mods.fml.common.Loader;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockCocoa;
-import net.minecraft.block.BlockCrops;
-import net.minecraft.block.BlockPotato;
+import net.minecraft.block.*;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -41,6 +38,17 @@ public class HarvestEvent {
         List<ItemStack> drops = new ArrayList<ItemStack>();
         Map<Integer, Integer> sortedDropsStacks = new HashMap<Integer, Integer>();
         // performing double check because Natura's cotton uses stages from 4 to 8
+        if (clickedBlock instanceof BlockFlower) {
+            BlockFlower flower = (BlockFlower) clickedBlock;
+            int stage = world.getBlockMetadata(x, y, z);
+            if (Loader.isModLoaded("chococraft") && Utils.isInstanceOf(flower, "chococraft.common.items.BlockGysahlStem")) {
+                if (stage == 4) {
+                    drops = flower.getBlockDropped(world, x, y, z, stage, 0);
+                    world.setBlockMetadataWithNotify(x, y, z, 0, 2);
+                    harvest = true;
+                }
+            }
+        }
         if (clickedBlock instanceof BlockCrops && !Utils.isInstanceOf(clickedBlock, "mods.natura.blocks.crops.CropBlock")) { // only vanilla
             BlockCrops crop = (BlockCrops) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);

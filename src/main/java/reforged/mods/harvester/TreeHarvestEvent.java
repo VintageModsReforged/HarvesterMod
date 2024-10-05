@@ -2,6 +2,8 @@ package reforged.mods.harvester;
 
 import cpw.mods.fml.common.Loader;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLeavesBase;
+import net.minecraft.block.BlockLog;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemAxe;
 import net.minecraft.item.ItemStack;
@@ -49,42 +51,29 @@ public class TreeHarvestEvent {
         if (!HarvesterConfig.TREE_CAPITATOR || Utils.isRendering()) {
             return false;
         }
+        if (!isLog(block)) {
+            return false;
+        }
         if (player.isSneaking()) {
             return false;
         }
         return ForgeHooks.canToolHarvestBlock(block, meta, stack) || stack.getItem() instanceof ItemAxe;
     }
 
-    private interface BlockAction {
-        boolean onBlock(BlockPos pos, Block block, boolean isRightBlock);
+    public boolean isLog(Block block) {
+        return block instanceof BlockLog ||
+                Utils.isInstanceOf(block, "binnie.extratrees.block.BlockETLog") ||
+                Utils.isInstanceOf(block, "forestry.arboriculture.gadgets.BlockLog") ||
+                Utils.isInstanceOf(block, "thaumcraft.common.world.BlockMagicalLog")
+                ;
     }
 
-    public LinkedList<BlockPos> scanForTree(final World world, final BlockPos startPos, int limit) {
-        Block block = Block.blocksList[world.getBlockId(startPos.getX(), startPos.getY(), startPos.getZ())];
-        ItemStack blockStack = new ItemStack(block, 1, 32767);
-        boolean isLog = false;
-        List<ItemStack> logs = Utils.getStackFromOre("log");
-        logs.addAll(Utils.getStackFromOre("wood")); // just in case some mod uses old oredict name
-        for (ItemStack check : logs) {
-            if (Utils.areStacksEqual(check, blockStack)) {
-                isLog = true;
-                break;
-            }
-        }
-        if (!isLog) {
-            return new LinkedList<BlockPos>();
-        }
-        final boolean[] leavesFound = new boolean[1];
-        LinkedList<BlockPos> result = recursiveSearch(world, startPos, new BlockAction() {
-            @Override
-            public boolean onBlock(BlockPos pos, Block block, boolean isRightBlock) {
-                int metadata = Utils.getBlockMetadata(world, pos) | 8;
-                boolean isLeave = metadata >= 8 && metadata <= 11;
-                if (block.isLeaves(world, startPos.getX(), startPos.getY(), startPos.getZ()) && isLeave || getBOPStatus(world, pos)) leavesFound[0] = true;
-                return true;
-            }
-        }, limit);
-        return leavesFound[0] ? result : new LinkedList<BlockPos>();
+    public boolean isLeaves(World world, BlockPos pos) {
+        Block block = Utils.getBlock(world, pos);
+        return getBOPStatus(world, pos) ||
+                Utils.isInstanceOf(block, "forestry.arboriculture.gadgets.BlockLeaves") || // raw check
+                Utils.isInstanceOf(block, "thaumcraft.common.world.BlockMagicalLeaves") // // raw check
+                ;
     }
 
     private boolean getBOPStatus(World world, BlockPos pos) {
@@ -100,6 +89,41 @@ public class TreeHarvestEvent {
         }
         return false;
     }
+
+    private interface BlockAction {
+        boolean onBlock(BlockPos pos, Block block, boolean isRightBlock);
+    }
+
+    public LinkedList<BlockPos> scanForTree(final World world, final BlockPos startPos, int limit) {
+        Block block = Block.blocksList[world.getBlockId(startPos.getX(), startPos.getY(), startPos.getZ())];
+        ItemStack blockStack = new ItemStack(block, 1, 32767);
+        boolean isLog = false;
+        List<ItemStack> logs = Utils.getStackFromOre("log");
+        logs.addAll(Utils.getStackFromOre("wood")); // just in case some mod uses old oredict name
+        for (ItemStack check : logs) {
+            if (Utils.areStacksEqual(check, blockStack) || isLog(block)) {
+                isLog = true;
+                break;
+            }
+        }
+        if (!isLog) {
+            return new LinkedList<BlockPos>();
+        }
+        final boolean[] leavesFound = new boolean[1];
+        LinkedList<BlockPos> result = recursiveSearch(world, startPos, new BlockAction() {
+            @Override
+            public boolean onBlock(BlockPos pos, Block block, boolean isRightBlock) {
+                int metadata = Utils.getBlockMetadata(world, pos) | 8;
+                boolean isLeave = metadata >= 8 && metadata <= 11;
+                if ((block.isLeaves(world, startPos.getX(), startPos.getY(), startPos.getZ()) || block instanceof BlockLeavesBase) && isLeave || isLeaves(world, pos)) leavesFound[0] = true;
+                return true;
+            }
+        }, limit);
+        return leavesFound[0] ? result : new LinkedList<BlockPos>();
+    }
+
+
+
 
     // Recursively scan 3x3x3 cubes while keeping track of already scanned blocks to avoid cycles.
     private static LinkedList<BlockPos> recursiveSearch(final World world, final BlockPos start, @Nullable final BlockAction action, int limit) {
