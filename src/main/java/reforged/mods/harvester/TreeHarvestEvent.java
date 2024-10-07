@@ -61,19 +61,24 @@ public class TreeHarvestEvent {
     }
 
     public boolean isLog(Block block) {
-        return block instanceof BlockLog ||
-                Utils.isInstanceOf(block, "binnie.extratrees.block.BlockETLog") ||
-                Utils.isInstanceOf(block, "forestry.arboriculture.gadgets.BlockLog") ||
-                Utils.isInstanceOf(block, "thaumcraft.common.world.BlockMagicalLog")
-                ;
+        String[] logs = HarvesterConfig.LOGS;
+        boolean configLogs = false;
+        for (String log : logs) {
+            if (Utils.isInstanceOf(block, log)) configLogs = true;
+            break;
+        }
+        return block instanceof BlockLog || configLogs;
     }
 
     public boolean isLeaves(World world, BlockPos pos) {
         Block block = Utils.getBlock(world, pos);
-        return getBOPStatus(world, pos) ||
-                Utils.isInstanceOf(block, "forestry.arboriculture.gadgets.BlockLeaves") || // raw check
-                Utils.isInstanceOf(block, "thaumcraft.common.world.BlockMagicalLeaves") // // raw check
-                ;
+        String[] leaves = HarvesterConfig.LEAVES;
+        boolean configLeaves = false;
+        for (String leave : leaves) {
+            if (Utils.isInstanceOf(block, leave)) configLeaves = true;
+            break;
+        }
+        return getBOPStatus(world, pos) || configLeaves;
     }
 
     private boolean getBOPStatus(World world, BlockPos pos) {
@@ -115,7 +120,7 @@ public class TreeHarvestEvent {
             public boolean onBlock(BlockPos pos, Block block, boolean isRightBlock) {
                 int metadata = Utils.getBlockMetadata(world, pos) | 8;
                 boolean isLeave = metadata >= 8 && metadata <= 11;
-                if ((block.isLeaves(world, startPos.getX(), startPos.getY(), startPos.getZ()) || block instanceof BlockLeavesBase) && isLeave || isLeaves(world, pos)) leavesFound[0] = true;
+                if ((block.isLeaves(world, pos.getX(), pos.getY(), pos.getZ()) || block instanceof BlockLeavesBase) && isLeave || isLeaves(world, pos)) leavesFound[0] = true;
                 return true;
             }
         }, limit);

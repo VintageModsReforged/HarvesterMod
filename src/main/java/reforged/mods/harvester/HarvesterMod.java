@@ -11,7 +11,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.logging.Logger;
 
-@Mod(modid = "harvester", name = "Harvester Mod", version = "1.4.7-1.0.4.2")
+@Mod(modid = "harvester", name = "Harvester Mod", version = "1.4.7-1.0.5.1")
 public class HarvesterMod {
 
     public static final Logger LOGGER = Logger.getLogger("Harvester Mod");
@@ -29,7 +29,7 @@ public class HarvesterMod {
     @ForgeSubscribe
     public void onRightClick(PlayerInteractEvent e) {
         if (HarvesterConfig.DEBUG && e.entityPlayer.getHeldItem() != null) {
-            if (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK && e.entityPlayer.getHeldItem().getItem() == Item.leather) {
+            if (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK && e.entityPlayer.getHeldItem().getItem() == Item.stick) {
                 Block block = Utils.getBlock(e.entity.worldObj, e.x, e.y, e.z);
                 int metadata = e.entityPlayer.worldObj.getBlockMetadata(e.x, e.y, e.z);
                 if (block != null) {
