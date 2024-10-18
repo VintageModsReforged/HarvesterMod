@@ -11,7 +11,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.logging.Logger;
 
-@Mod(modid = "harvester", name = "Harvester Mod", version = "1.5.2-1.0.5.1")
+@Mod(modid = "harvester", name = "Harvester Mod", version = "1.5.2-1.0.5.2")
 public class HarvesterMod {
 
     public static final Logger LOGGER = Logger.getLogger("Harvester Mod");
