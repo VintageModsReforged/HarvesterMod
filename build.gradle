@@ -55,5 +55,8 @@ dependencies {
 	//coremodImplementation files("libs/name.jar")
 	//coremodImplementation files("libs/name.zip")
 	//modImplementation files("libs/name.jar")
-	//modImplementation files("libs/name.zip")
+	modImplementation files("libs/redpowermechanical.zip")
+	modImplementation files("libs/redpowercore.zip")
+	modImplementation files("libs/redpowerdigital.zip")
+	modImplementation files("libs/redpowercompat.zip")
 }

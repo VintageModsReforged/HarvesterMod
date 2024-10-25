@@ -23,13 +23,15 @@ public class TreeHarvestEvent {
 
     public void onBlockHarvested(World world, int x, int y, int z, Block block, int metadata, EntityPlayer player) {
         ItemStack heldStack = player.getHeldItem();
-        if (heldStack != null && canHarvest(player, heldStack, block, metadata)) {
+        if (heldStack != null && canHarvest(player, heldStack, block, metadata, new BlockPos(x, y, z))) {
             BlockPos origin = new BlockPos(x, y, z);
             int maxCount = HarvesterConfig.CAPITATOR_MAX_COUNT;
             LinkedList<BlockPos> connectedLogs = scanForTree(world, origin, player.isSneaking() ? 0 : maxCount);
             for (BlockPos log : connectedLogs) {
-                int id = world.getBlockId(log.getX(), log.getY(), log.getZ());
-                if (Utils.harvestBlock(world, log.getX(), log.getY(), log.getZ(), player)) {
+                Block logBlock = Utils.getBlock(world, log);
+                int id = Utils.getBlockId(world, log);
+                boolean isAxeHarvestable = heldStack.getItem() instanceof ItemAxe && heldStack.getItem().getStrVsBlock(heldStack, logBlock) > 1F;
+                if ((isAxeHarvestable || heldStack.getItem().canHarvestBlock(logBlock)) && Utils.harvestBlock(world, log.getX(), log.getY(), log.getZ(), player)) {
                     /**
                      *  Skip damaging first block, minecraft
                      *  {@link net.minecraft.item.ItemInWorldManager#removeBlock(int, int, int)} already does that
@@ -47,11 +49,11 @@ public class TreeHarvestEvent {
         }
     }
 
-    public boolean canHarvest(EntityPlayer player, ItemStack stack, Block block, int meta) {
+    public boolean canHarvest(EntityPlayer player, ItemStack stack, Block block, int meta, BlockPos pos) {
         if (!HarvesterConfig.TREE_CAPITATOR || Utils.isRendering()) {
             return false;
         }
-        if (!isLog(block)) {
+        if (!isLog(block, player.worldObj, pos)) {
             return false;
         }
         if (player.isSneaking()) {
@@ -60,14 +62,14 @@ public class TreeHarvestEvent {
         return ForgeHooks.canToolHarvestBlock(block, meta, stack) || stack.getItem() instanceof ItemAxe;
     }
 
-    public boolean isLog(Block block) {
+    public boolean isLog(Block block, World world, BlockPos pos) {
         String[] logs = HarvesterConfig.LOGS;
         boolean configLogs = false;
         for (String log : logs) {
             if (Utils.isInstanceOf(block, log)) configLogs = true;
             break;
         }
-        return block instanceof BlockLog || configLogs;
+        return block instanceof BlockLog || block.isWood(world, pos.getX(), pos.getY(), pos.getZ()) || configLogs;
     }
 
     public boolean isLeaves(World world, BlockPos pos) {
@@ -106,7 +108,7 @@ public class TreeHarvestEvent {
         List<ItemStack> logs = Utils.getStackFromOre("log");
         logs.addAll(Utils.getStackFromOre("wood")); // just in case some mod uses old oredict name
         for (ItemStack check : logs) {
-            if (Utils.areStacksEqual(check, blockStack) || isLog(block)) {
+            if (Utils.areStacksEqual(check, blockStack) || isLog(block, world, startPos)) {
                 isLog = true;
                 break;
             }
@@ -120,7 +122,8 @@ public class TreeHarvestEvent {
             public boolean onBlock(BlockPos pos, Block block, boolean isRightBlock) {
                 int metadata = Utils.getBlockMetadata(world, pos) | 8;
                 boolean isLeave = metadata >= 8 && metadata <= 11;
-                if ((block.isLeaves(world, pos.getX(), pos.getY(), pos.getZ()) || block instanceof BlockLeavesBase) && isLeave || isLeaves(world, pos)) leavesFound[0] = true;
+                boolean vanillaLeaves = isLeave && block instanceof BlockLeavesBase;
+                if (block.isLeaves(world, pos.getX(), pos.getY(), pos.getZ()) || vanillaLeaves || isLeaves(world, pos)) leavesFound[0] = true;
                 return true;
             }
         }, limit);
