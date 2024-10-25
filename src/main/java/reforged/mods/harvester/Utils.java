@@ -34,6 +34,10 @@ public class Utils {
         return world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
     }
 
+    public static int getBlockId(World world, BlockPos pos) {
+        return world.getBlockId(pos.getX(), pos.getY(), pos.getZ());
+    }
+
     public static Block getBlock(World world, BlockPos pos) {
         return getBlock(world, pos.getX(), pos.getY(), pos.getZ());
     }

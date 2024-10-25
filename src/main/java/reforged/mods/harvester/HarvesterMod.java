@@ -11,7 +11,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
 import java.util.logging.Logger;
 
-@Mod(modid = "harvester", name = "Harvester Mod", version = "1.5.2-1.0.5.2")
+@Mod(modid = "harvester", name = "Harvester Mod", version = "1.5.2-1.0.5.4")
 public class HarvesterMod {
 
     public static final Logger LOGGER = Logger.getLogger("Harvester Mod");
@@ -34,8 +34,10 @@ public class HarvesterMod {
                 Block block = Utils.getBlock(e.entity.worldObj, e.x, e.y, e.z);
                 int metadata = e.entityPlayer.worldObj.getBlockMetadata(e.x, e.y, e.z);
                 if (block != null) {
-                    LOGGER.info("Block: " + block.getLocalizedName() + " | Class Name: " + block.getClass().getName());
-                    LOGGER.info("Block Metadata: " + metadata);
+                    if (Utils.isRendering()) {
+                        LOGGER.info("Block: " + block.getLocalizedName() + " | Class Name: " + block.getClass().getName());
+                        LOGGER.info("Block Metadata: " + metadata);
+                    }
                 }
             }
         }
