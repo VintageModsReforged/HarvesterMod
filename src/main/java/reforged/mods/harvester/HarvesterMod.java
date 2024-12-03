@@ -3,6 +3,8 @@ package reforged.mods.harvester;
 import cpw.mods.fml.common.FMLLog;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import cpw.mods.fml.common.registry.TickRegistry;
+import cpw.mods.fml.relauncher.Side;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
@@ -25,6 +27,7 @@ public class HarvesterMod {
     @Mod.PreInit
     public void preInit(FMLPreInitializationEvent e) {
         HarvesterConfig.init();
+        TickRegistry.registerTickHandler(new GrowthEvent(), Side.SERVER);
     }
 
     @ForgeSubscribe

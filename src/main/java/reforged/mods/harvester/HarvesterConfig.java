@@ -20,6 +20,14 @@ public class HarvesterConfig {
     public static String[] LOGS;
     public static String[] LEAVES;
 
+    public static int RADIUS;
+    public static boolean SAPLINGS;
+    public static boolean CROPS;
+    public static boolean IC2_CROPS;
+    public static double SPRINT_GROW_CHANCE;
+    public static double SNEAK_GROW_CHANCE;
+    public static int SNEAK_BEFORE_GROW;
+
     public static void init() {
         CONFIG = new Configuration(new File((File) FMLInjectionData.data()[6], "config/harvester.cfg"));
         CONFIG.load();
@@ -39,6 +47,14 @@ public class HarvesterConfig {
             MIN_DECAY_TIME = getInt("main", "MinimumDecayTime", 0, Integer.MAX_VALUE, 4, "Minimum time in ticks for leaf decay. Must be lower than MaximumDecayTime!");
             MAX_DECAY_TIME = getInt("main", "MaximumDecayTime", 0, Integer.MAX_VALUE, 11, "Maximum time in ticks for leaf decay. Must be higher than MinimumDecayTime!");
         }
+
+        RADIUS = getInt("main - growth", "radius", 0, Integer.MAX_VALUE, 5, "The radius of effect in blocks of applying the growth effect. Not recommended to change due to performance");
+        SAPLINGS = getBoolean("main - growth", "saplings", true, "When true saplings are allowed to grow with twerking");
+        CROPS = getBoolean("main - growth", "crops", true, "When true crops are allowed to grow with twerking");
+        IC2_CROPS = getBoolean("main - growth", "ic2Crops", false, "When true IC2 crops are allowed to grow with twerking");
+        SPRINT_GROW_CHANCE = getDouble("main - growth", "sprintGrowChance", 0, 1, 0.15, "The chance of growth effect being applied from sprinting");
+        SNEAK_GROW_CHANCE = getDouble("main - growth", "sneakGrowChance", 0, 1, 0.5, "The chance of growth effect being applied from any source");
+        SNEAK_BEFORE_GROW = getInt("main - growth", "sneakBeforeGrowth", 0, Integer.MAX_VALUE, 5, "The minimum number of crouches before the bonemeal is applied (bonemeal is applied randomly so this will not be exact)");
 
         if (CONFIG != null) {
             CONFIG.save();
@@ -60,6 +76,17 @@ public class HarvesterConfig {
         value = Math.max(value, min);
         value = Math.min(value, max);
         prop.set(Integer.toString(value));
+        return value;
+    }
+
+    private static double getDouble(String cat, String tag, double min, double max, double defaultValue, String comment) {
+        comment = comment.replace("{t}", tag) + "\n";
+        Property prop = CONFIG.get(cat, tag, defaultValue);
+        prop.comment = comment + "Min: " + min + ", Max: " + max + ", Default: " + defaultValue;
+        double value = prop.getDouble(defaultValue);
+        value = Math.max(value, min);
+        value = Math.min(value, max);
+        prop.set(Double.toString(value));
         return value;
     }
 
