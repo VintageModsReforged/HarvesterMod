@@ -24,11 +24,16 @@ public class HarvestEvent {
             ItemStack heldStack = player.getHeldItem();
             int radius = getRadius(heldStack);
             BlockPos pos = new BlockPos(e.x, e.y, e.z);
+            int harvested = 0;
             for (BlockPos crop : BlockPos.getAllInBoxMutable(pos.add(-radius, 0, -radius), pos.add(radius, 0, radius))) {
                 if (harvest(player, crop.getX(), crop.getY(), crop.getZ())) {
                     e.setResult(Event.Result.ALLOW);
-                    e.setCanceled(true);
+                    ++harvested;
                 }
+            }
+            if (harvested > 0) {
+                if (isHoe(heldStack)) heldStack.damageItem(1, player);
+                e.setCanceled(true);
             }
         }
     }
@@ -158,10 +163,6 @@ public class HarvestEvent {
                 dropItem.motionX += (random.nextFloat() - random.nextFloat()) * 0.1F;
                 dropItem.motionZ += (random.nextFloat() - random.nextFloat()) * 0.1F;
             }
-        }
-        ItemStack heldStack = player.getHeldItem();
-        if (harvest && isHoe(heldStack)) {
-            heldStack.damageItem(1, player);
         }
         return harvest;
     }
