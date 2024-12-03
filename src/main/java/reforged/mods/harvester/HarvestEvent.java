@@ -5,11 +5,13 @@ import net.minecraft.block.*;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import reforged.mods.harvester.pos.BlockPos;
 
 import java.util.*;
 
@@ -19,11 +21,31 @@ public class HarvestEvent {
     public void onRightClick(PlayerInteractEvent e) {
         if (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             EntityPlayer player = e.entityPlayer;
-            if (harvest(player, e.x, e.y, e.z)) {
-                e.setResult(Event.Result.ALLOW);
-                e.setCanceled(true);
+            ItemStack heldStack = player.getHeldItem();
+            int radius = getRadius(heldStack);
+            BlockPos pos = new BlockPos(e.x, e.y, e.z);
+            for (BlockPos crop : BlockPos.getAllInBoxMutable(pos.add(-radius, 0, -radius), pos.add(radius, 0, radius))) {
+                if (harvest(player, crop.getX(), crop.getY(), crop.getZ())) {
+                    e.setResult(Event.Result.ALLOW);
+                    e.setCanceled(true);
+                }
             }
         }
+    }
+
+    public boolean isHoe(ItemStack heldStack) {
+        return heldStack != null && heldStack.getItem() instanceof ItemHoe;
+    }
+
+    public int getRadius(ItemStack heldStack) {
+        if (isHoe(heldStack)) {
+            if (heldStack.itemID == Item.hoeWood.itemID || heldStack.itemID == Item.hoeStone.itemID || heldStack.itemID == Item.hoeGold.itemID) {
+                return 1; // tier 1
+            } else if (heldStack.itemID == Item.hoeIron.itemID || heldStack.itemID == Item.hoeDiamond.itemID) {
+                return 2; // tier 2
+            }
+        }
+        return 0;
     }
 
     public boolean harvest(EntityPlayer player, int x, int y, int z) {
@@ -63,7 +85,7 @@ public class HarvestEvent {
                 harvest = true;
             }
         }
-        if (Loader.isModLoaded("Natura") && clickedBlock instanceof mods.natura.blocks.crops.CropBlock) { // Natura
+        if (Loader.isModLoaded("Natura") && Utils.isInstanceOf(clickedBlock, "mods.natura.blocks.crops.CropBlock")) { // Natura
             mods.natura.blocks.crops.CropBlock crop = (mods.natura.blocks.crops.CropBlock) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
             if (stage == 3) {
@@ -136,6 +158,10 @@ public class HarvestEvent {
                 dropItem.motionX += (random.nextFloat() - random.nextFloat()) * 0.1F;
                 dropItem.motionZ += (random.nextFloat() - random.nextFloat()) * 0.1F;
             }
+        }
+        ItemStack heldStack = player.getHeldItem();
+        if (harvest && isHoe(heldStack)) {
+            heldStack.damageItem(1, player);
         }
         return harvest;
     }
