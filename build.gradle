@@ -59,4 +59,5 @@ dependencies {
 	modImplementation files("libs/redpowercore.zip")
 	modImplementation files("libs/redpowerdigital.zip")
 	modImplementation files("libs/redpowercompat.zip")
+	modImplementation files("libs/industrialcraft-2_1.115.207-lf.jar")
 }

@@ -123,7 +123,9 @@ public class TreeHarvestEvent {
                 int metadata = Utils.getBlockMetadata(world, pos) | 8;
                 boolean isLeave = metadata >= 8 && metadata <= 11;
                 boolean vanillaLeaves = isLeave && block instanceof BlockLeavesBase;
-                if (block.isLeaves(world, pos.getX(), pos.getY(), pos.getZ()) || vanillaLeaves || isLeaves(world, pos)) leavesFound[0] = true;
+                if (vanillaLeaves) {
+                    leavesFound[0] = true;
+                } else if (block.isLeaves(world, pos.getX(), pos.getY(), pos.getZ()) || isLeaves(world, pos)) leavesFound[0] = true;
                 return true;
             }
         }, limit);
