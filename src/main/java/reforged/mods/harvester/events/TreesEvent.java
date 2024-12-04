@@ -32,7 +32,9 @@ public class TreesEvent {
             for (BlockPos log : connectedLogs) {
                 Block logBlock = Utils.getBlock(world, log);
                 int id = Utils.getBlockId(world, log);
-                boolean isAxeHarvestable = heldStack.getItem() instanceof ItemAxe && heldStack.getItem().getStrVsBlock(heldStack, logBlock) > 1F;
+                boolean isAxeHarvestable = heldStack.getItem() instanceof ItemAxe ||
+                        (heldStack.getItem().getStrVsBlock(heldStack, logBlock) > 1F ||
+                        heldStack.getItem().getStrVsBlock(heldStack, logBlock, Utils.getBlockMetadata(world, log)) > 1F);
                 if ((isAxeHarvestable || heldStack.getItem().canHarvestBlock(logBlock)) && Utils.harvestBlock(world, log.getX(), log.getY(), log.getZ(), player)) {
                     /**
                      *  Skip damaging first block, minecraft
