@@ -79,7 +79,7 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
                         HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Patching method " + hm.get("javaClassName") + "/" + m.name + m.desc + "...");
                         LabelNode lmm1Node = new LabelNode(new Label());
                         InsnList toInject = new InsnList();
-                        toInject.add(new FieldInsnNode(Opcodes.GETSTATIC, "reforged/mods/harvester/TreeHarvestEvent", "instance", "Lreforged/mods/harvester/TreeHarvestEvent;"));
+                        toInject.add(new FieldInsnNode(Opcodes.GETSTATIC, "reforged/mods/harvester/events/TreesEvent", "instance", "Lreforged/mods/harvester/events/TreesEvent;"));
                         toInject.add(new VarInsnNode(Opcodes.ALOAD, 0));
                         toInject.add(new FieldInsnNode(Opcodes.GETFIELD, hm.get("javaClassName"), hm.get("worldFieldName"), "L" + hm.get("worldJavaClassName") + ";"));
                         toInject.add(new VarInsnNode(Opcodes.ILOAD, 1));
@@ -89,7 +89,7 @@ public class ItemInWorldManagerTransformer implements IClassTransformer {
                         toInject.add(new VarInsnNode(Opcodes.ILOAD, mdIndex));
                         toInject.add(new VarInsnNode(Opcodes.ALOAD, 0));
                         toInject.add(new FieldInsnNode(Opcodes.GETFIELD, hm.get("javaClassName"), hm.get("entityPlayerFieldName"), "L" + hm.get("entityPlayerMPJavaClassName") + ";"));
-                        toInject.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "reforged/mods/harvester/TreeHarvestEvent", "onBlockHarvested", "(L" + hm.get("worldJavaClassName") + ";IIIL" + hm.get("blockJavaClassName") + ";IL" + hm.get("entityPlayerJavaClassName") + ";)V"));
+                        toInject.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "reforged/mods/harvester/events/TreesEvent", "onBlockHarvested", "(L" + hm.get("worldJavaClassName") + ";IIIL" + hm.get("blockJavaClassName") + ";IL" + hm.get("entityPlayerJavaClassName") + ";)V"));
                         toInject.add(lmm1Node);
                         m.instructions.insertBefore(m.instructions.get(index + offset), toInject);
                         HarvesterMod.LOGGER.info("[Tree Harvester - ASM] Method " + hm.get("javaClassName") + "/" + m.name + m.desc + " patched at index " + (index + offset - 1));

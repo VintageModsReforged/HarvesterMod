@@ -1,4 +1,4 @@
-package reforged.mods.harvester;
+package reforged.mods.harvester.events;
 
 import ic2.core.block.BlockCrop;
 import ic2.core.block.TileEntityCrop;

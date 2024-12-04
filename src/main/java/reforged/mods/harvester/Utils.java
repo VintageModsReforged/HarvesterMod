@@ -24,8 +24,6 @@ import java.util.List;
 
 public class Utils {
 
-    public static Utils instance = new Utils();
-
     public static boolean isAir(World world, BlockPos pos) {
         return world.isAirBlock(pos.getX(), pos.getY(), pos.getZ());
     }

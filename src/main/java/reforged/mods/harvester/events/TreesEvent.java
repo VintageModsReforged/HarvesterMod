@@ -1,4 +1,4 @@
-package reforged.mods.harvester;
+package reforged.mods.harvester.events;
 
 import cpw.mods.fml.common.Loader;
 import net.minecraft.block.Block;
@@ -10,6 +10,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.common.ForgeHooks;
 import org.jetbrains.annotations.Nullable;
+import reforged.mods.harvester.HarvesterConfig;
+import reforged.mods.harvester.Utils;
 import reforged.mods.harvester.pos.BlockPos;
 
 import java.util.HashSet;
@@ -17,9 +19,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-public class TreeHarvestEvent {
+public class TreesEvent {
 
-    public static final TreeHarvestEvent instance = new TreeHarvestEvent();
+    public static final TreesEvent instance = new TreesEvent();
 
     public void onBlockHarvested(World world, int x, int y, int z, Block block, int metadata, EntityPlayer player) {
         ItemStack heldStack = player.getHeldItem();

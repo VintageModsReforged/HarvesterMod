@@ -1,4 +1,4 @@
-package reforged.mods.harvester;
+package reforged.mods.harvester.events;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.ITickHandler;
@@ -13,6 +13,8 @@ import net.minecraft.item.ItemDye;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import reforged.mods.harvester.HarvesterConfig;
+import reforged.mods.harvester.Utils;
 import reforged.mods.harvester.pos.BlockPos;
 
 import java.util.*;
@@ -25,6 +27,9 @@ public class GrowthEvent implements ITickHandler {
     @Override
     public void tickStart(EnumSet<TickType> enumSet, Object... objects) {
         EntityPlayer player = (EntityPlayer) objects[0];
+        if (!HarvesterConfig.GROWTH) {
+            return;
+        }
         if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
             return;
         }
@@ -64,7 +69,14 @@ public class GrowthEvent implements ITickHandler {
         World world = player.worldObj;
         List<BlockPos> area = getNearestBlocks(world, origin);
         for (BlockPos pos : area) {
-            ItemDye.applyBonemeal(new ItemStack(Item.dyePowder, 1, 3), world, pos.getX(), pos.getY(), pos.getZ(), player);
+            Block block = Utils.getBlock(world, pos);
+            if (block instanceof BlockCrops) {
+                ItemDye.applyBonemeal(new ItemStack(Item.dyePowder, 1, 3), world, pos.getX(), pos.getY(), pos.getZ(), player);
+            }
+            if (block instanceof BlockSapling) {
+                BlockSapling sapling = (BlockSapling) block;
+                sapling.markOrGrowMarked(world, pos.getX(), pos.getY(), pos.getZ(), world.rand);
+            }
             if (Loader.isModLoaded("IC2")) IC2CropHandler.handleIC2Crops(world, pos);
         }
     }

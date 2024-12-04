@@ -17,6 +17,7 @@ public class HarvesterConfig {
     public static boolean DEBUG;
     public static boolean TREE_CAPITATOR;
     public static boolean IGNORE_DURABILITY;
+    public static boolean GROWTH;
     public static String[] LOGS;
     public static String[] LEAVES;
 
@@ -48,6 +49,7 @@ public class HarvesterConfig {
             MAX_DECAY_TIME = getInt("main", "MaximumDecayTime", 0, Integer.MAX_VALUE, 11, "Maximum time in ticks for leaf decay. Must be higher than MinimumDecayTime!");
         }
 
+        GROWTH = getBoolean("main - growth", "growth", true, "Enable growth effect from sneak and sprinting?");
         RADIUS = getInt("main - growth", "radius", 0, Integer.MAX_VALUE, 5, "The radius of effect in blocks of applying the growth effect. Not recommended to change due to performance");
         SAPLINGS = getBoolean("main - growth", "saplings", true, "When true saplings are allowed to grow with twerking");
         CROPS = getBoolean("main - growth", "crops", true, "When true crops are allowed to grow with twerking");

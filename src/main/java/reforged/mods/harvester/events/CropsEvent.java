@@ -1,4 +1,4 @@
-package reforged.mods.harvester;
+package reforged.mods.harvester.events;
 
 import cpw.mods.fml.common.Loader;
 import net.minecraft.block.*;
@@ -11,11 +11,12 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import reforged.mods.harvester.Utils;
 import reforged.mods.harvester.pos.BlockPos;
 
 import java.util.*;
 
-public class HarvestEvent {
+public class CropsEvent {
 
     @ForgeSubscribe
     public void onRightClick(PlayerInteractEvent e) {
