@@ -26,10 +26,8 @@ public class GrowthEvent implements ITickHandler {
 
     @Override
     public void tickStart(EnumSet<TickType> enumSet, Object... objects) {
+        if (!HarvesterConfig.GROWTH) return;
         EntityPlayer player = (EntityPlayer) objects[0];
-        if (!HarvesterConfig.GROWTH) {
-            return;
-        }
         if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
             return;
         }

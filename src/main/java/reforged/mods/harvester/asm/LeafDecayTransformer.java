@@ -41,7 +41,7 @@ public class LeafDecayTransformer implements IClassTransformer {
                 toInject.add(new VarInsnNode(Opcodes.ILOAD, 2));
                 toInject.add(new VarInsnNode(Opcodes.ILOAD, 3));
                 toInject.add(new VarInsnNode(Opcodes.ILOAD, 4));
-                toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "reforged/mods/harvester/asm/LeafDecayHandler", "handleLeafDecay", "(Laab;III)V"));
+                toInject.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "reforged/mods/harvester/events/LeafDecayEvent", "onLeafDecay", "(Laab;III)V"));
                 toInject.add(lmm1Node);
                 methodNode.instructions.insert(toInject);
                 HarvesterMod.LOGGER.info("[Leaf Decay - ASM] Method " + names.get("blockClassName") + "/" + methodNode.name + methodNode.desc + " patched!");

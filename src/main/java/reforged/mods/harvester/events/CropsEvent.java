@@ -12,6 +12,7 @@ import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.entity.player.UseHoeEvent;
+import reforged.mods.harvester.HarvesterConfig;
 import reforged.mods.harvester.Utils;
 import reforged.mods.harvester.pos.BlockPos;
 
@@ -21,6 +22,7 @@ public class CropsEvent {
 
     @ForgeSubscribe
     public void onRightClick(PlayerInteractEvent e) {
+        if (!HarvesterConfig.HARVEST) return;
         if (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             EntityPlayer player = e.entityPlayer;
             if (!isHoe(player.getHeldItem())) {
@@ -34,6 +36,7 @@ public class CropsEvent {
 
     @ForgeSubscribe
     public void onHoeUse(UseHoeEvent e) {
+        if (!HarvesterConfig.HARVEST) return;
         EntityPlayer player = e.entityPlayer;
         ItemStack hoeStack = player.getHeldItem();
         int radius = getRadius(hoeStack);

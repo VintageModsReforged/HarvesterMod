@@ -21,6 +21,7 @@ public class TreesEvent {
     public static final TreesEvent instance = new TreesEvent();
 
     public void onBlockHarvested(World world, int x, int y, int z, Block block, int metadata, EntityPlayer player) {
+        if (!HarvesterConfig.TREE_CAPITATOR) return;
         ItemStack heldStack = player.getHeldItem();
         if (heldStack != null && canHarvest(player, heldStack, block, metadata, new BlockPos(x, y, z))) {
             BlockPos origin = new BlockPos(x, y, z);

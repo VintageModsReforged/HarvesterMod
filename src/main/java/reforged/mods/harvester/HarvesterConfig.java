@@ -17,6 +17,7 @@ public class HarvesterConfig {
     public static boolean TREE_CAPITATOR;
     public static boolean LEAF_DECAY;
     public static boolean GROWTH;
+    public static boolean HARVEST;
     // tree capitator
     public static int CAPITATOR_MAX_COUNT;
     public static boolean IGNORE_DURABILITY;
@@ -43,6 +44,7 @@ public class HarvesterConfig {
         TREE_CAPITATOR = getBoolean("common", "treeCapitator", true, "Enable TreeCapitator feature?");
         LEAF_DECAY = getBoolean("common", "leafDecay", true, "Enable Leaf Decay feature?");
         GROWTH = getBoolean("common", "growth", true, "Enable Growth feature? (Applies growth effect from sneak or sprinting)");
+        HARVEST = getBoolean("common", "harvest", true, "Enable Right Click harvest feature?");
         // capitator
         CAPITATOR_MAX_COUNT = getInt("TreeCapitator", "capitatorMaxCount", 0, Integer.MAX_VALUE, 256, "TreeCapitator Max Harvest Count");
         IGNORE_DURABILITY = getBoolean("TreeCapitator", "ignoreDurability", true, "Ignore tool's durability when chopping down a tree, meaning it will continue harvesting it even if the durability is low." +
