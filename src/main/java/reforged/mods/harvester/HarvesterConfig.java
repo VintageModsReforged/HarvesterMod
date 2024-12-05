@@ -11,15 +11,22 @@ public class HarvesterConfig {
 
     public static Configuration CONFIG;
 
+    public static boolean DEBUG;
+
+    // features - general
+    public static boolean TREE_CAPITATOR;
+    public static boolean LEAF_DECAY;
+    public static boolean GROWTH;
+    public static boolean HARVEST;
+    // tree capitator
+    public static int CAPITATOR_MAX_COUNT;
+    public static boolean IGNORE_DURABILITY;
+    public static String[] LEAVES;
+    public static String[] LOGS;
+    // leaf decay
     public static int MIN_DECAY_TIME;
     public static int MAX_DECAY_TIME;
-    public static boolean DEBUG;
-    public static int CAPITATOR_MAX_COUNT;
-    public static boolean TREE_CAPITATOR;
-    public static boolean IGNORE_DURABILITY;
-    public static String[] LOGS;
-    public static String[] LEAVES;
-
+    // growth
     public static int RADIUS;
     public static boolean SAPLINGS;
     public static boolean CROPS;
@@ -32,30 +39,35 @@ public class HarvesterConfig {
         CONFIG = new Configuration(new File((File) FMLInjectionData.data()[6], "config/harvester.cfg"));
         CONFIG.load();
 
-        DEBUG = getBoolean("debug", "Debug", false, "Enable debug mode. Helps identify block name, class and metadata. Useful for crops and leaves.");
-        MIN_DECAY_TIME = getInt("main - decay", "MinimumDecayTime", 0, Integer.MAX_VALUE, 4, "Minimum time in ticks for leaf decay. Must be lower than MaximumDecayTime!");
-        MAX_DECAY_TIME = getInt("main - decay", "MaximumDecayTime", 0, Integer.MAX_VALUE, 11, "Maximum time in ticks for leaf decay. Must be higher than MinimumDecayTime!");
-        TREE_CAPITATOR = getBoolean("main - capitator", "TreeCapitator", true, "Enable TreeCapitator feature?");
-        CAPITATOR_MAX_COUNT = getInt("main - capitator", "CapitatorMaxCount", 0, Integer.MAX_VALUE, 256, "TreeCapitator Max Harvest Count");
-        IGNORE_DURABILITY = getBoolean("main - capitator", "IgnoreDurability", true, "Ignore tool's durability when chopping down a tree, meaning it will continue harvesting it even if the durability is low." +
-                "\nIF true, THIS WILL GLITCH THE TOOL AND MAKE IT SEEM LIKE IT HAS RESTORED DURABILITY, BUT THAT IS ONLY VISUAL AND NEXT HARVEST WILL BREAK IT!" +
-                "\nIf false, this will prevent harvesting once the durability is gone, meaning if the tree is big enough, the upper part  might be left unharvested. This is more unpleasant than having a glitched tool :D");
-        LOGS = getString("main - capitator", "logs", new String[]{"thaumcraft.common.world.BlockMagicalLog"}, "Support for custom logs block that aren't instances of `BlockLog`. Enable debug and right click with a stick to get more info in the log.");
-        LEAVES = getString("main - capitator", "leaves", new String[]{}, "Support for custom leaves block. This shouldn't be here, but just in case, for blocks that have their `isLeaves=false` for some reasons, but still are leaves... Enable debug and right click with a stick to get more info in the log.");
-
+        DEBUG = getBoolean("debug", "debug", false, "Enable debug mode. Helps identify block name, class and metadata. Useful for crops and leaves.");
+        // features
+        TREE_CAPITATOR = getBoolean("common", "treeCapitator", true, "Enable TreeCapitator feature?");
+        LEAF_DECAY = getBoolean("common", "leafDecay", true, "Enable Leaf Decay feature?");
+        GROWTH = getBoolean("common", "growth", true, "Enable Growth feature? (Applies growth effect from sneak or sprinting)");
+        HARVEST = getBoolean("common", "harvest", true, "Enable Right Click harvest feature?");
+        // capitator
+        CAPITATOR_MAX_COUNT = getInt("TreeCapitator", "capitatorMaxCount", 0, Integer.MAX_VALUE, 256, "TreeCapitator Max Harvest Count");
+        IGNORE_DURABILITY = getBoolean("TreeCapitator", "ignoreDurability", true, "Ignore tool's durability when chopping down a tree, meaning it will continue harvesting it even if the durability is low." +
+                "\nIf true, the tree harvester will ignore tools' damage and will cut down the whole tree. E.g. Huge Jungle Tree can be harvested using Wooden Axe." +
+                "\nIf false, this will prevent harvesting once the durability is gone, meaning if the tree is big enough, the upper part  might be left unharvested.");
+        LEAVES = getString("TreeCapitator", "leaves", new String[]{}, "Support for custom leaves block. Enable debug and right click with a stick to get more info in the log.");
+        LOGS = getString("TreeCapitator", "logs", new String[]{"thaumcraft.common.world.BlockMagicalLog"}, "Support for custom logs. Enable debug and right click with a stick to get more info in the log.");
+        // leaf decay
+        MIN_DECAY_TIME = getInt("LeafDecay", "minimumDecayTime", 0, Integer.MAX_VALUE, 4, "Minimum time in ticks for leaf decay. Must be lower than MaximumDecayTime!");
+        MAX_DECAY_TIME = getInt("LeafDecay", "maximumDecayTime", 0, Integer.MAX_VALUE, 11, "Maximum time in ticks for leaf decay. Must be higher than MinimumDecayTime!");
         if (MIN_DECAY_TIME >= MAX_DECAY_TIME) {
-            HarvesterMod.LOGGER.warning("MinimumDecayTime needs to be lower than MaximumDecayTime, resetting to default values!");
-            MIN_DECAY_TIME = getInt("main", "MinimumDecayTime", 0, Integer.MAX_VALUE, 4, "Minimum time in ticks for leaf decay. Must be lower than MaximumDecayTime!");
-            MAX_DECAY_TIME = getInt("main", "MaximumDecayTime", 0, Integer.MAX_VALUE, 11, "Maximum time in ticks for leaf decay. Must be higher than MinimumDecayTime!");
+            HarvesterMod.LOGGER.warning("minimumDecayTime needs to be lower than MaximumDecayTime, resetting to default values!");
+            MIN_DECAY_TIME = getInt("LeafDecay", "minimumDecayTime", 0, Integer.MAX_VALUE, 4, "Minimum time in ticks for leaf decay. Must be lower than MaximumDecayTime!");
+            MAX_DECAY_TIME = getInt("LeafDecay", "maximumDecayTime", 0, Integer.MAX_VALUE, 11, "Maximum time in ticks for leaf decay. Must be higher than MinimumDecayTime!");
         }
-
-        RADIUS = getInt("main - growth", "radius", 0, Integer.MAX_VALUE, 5, "The radius of effect in blocks of applying the growth effect. Not recommended to change due to performance");
-        SAPLINGS = getBoolean("main - growth", "saplings", true, "When true saplings are allowed to grow with twerking");
-        CROPS = getBoolean("main - growth", "crops", true, "When true crops are allowed to grow with twerking");
-        IC2_CROPS = getBoolean("main - growth", "ic2Crops", false, "When true IC2 crops are allowed to grow with twerking");
-        SPRINT_GROW_CHANCE = getDouble("main - growth", "sprintGrowChance", 0, 1, 0.15, "The chance of growth effect being applied from sprinting");
-        SNEAK_GROW_CHANCE = getDouble("main - growth", "sneakGrowChance", 0, 1, 0.5, "The chance of growth effect being applied from any source");
-        SNEAK_BEFORE_GROW = getInt("main - growth", "sneakBeforeGrowth", 0, Integer.MAX_VALUE, 5, "The minimum number of crouches before the bonemeal is applied (bonemeal is applied randomly so this will not be exact)");
+        // growth
+        RADIUS = getInt("Growth", "radius", 0, Integer.MAX_VALUE, 5, "The radius of effect in blocks of applying the growth effect. Not recommended to change due to performance");
+        SAPLINGS = getBoolean("Growth", "saplings", true, "When true saplings are allowed to grow with twerking");
+        CROPS = getBoolean("Growth", "crops", true, "When true crops are allowed to grow with twerking");
+        IC2_CROPS = getBoolean("Growth", "ic2Crops", false, "When true IC2 crops are allowed to grow with twerking");
+        SPRINT_GROW_CHANCE = getDouble("Growth", "sprintGrowChance", 0, 1, 0.15, "The chance of growth effect being applied from sprinting");
+        SNEAK_GROW_CHANCE = getDouble("Growth", "sneakGrowChance", 0, 1, 0.5, "The chance of growth effect being applied from any source");
+        SNEAK_BEFORE_GROW = getInt("Growth", "sneakBeforeGrowth", 0, Integer.MAX_VALUE, 5, "The minimum number of crouches before the bonemeal is applied (bonemeal is applied randomly so this will not be exact)");
 
         if (CONFIG != null) {
             CONFIG.save();

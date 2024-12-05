@@ -1,4 +1,4 @@
-package reforged.mods.harvester;
+package reforged.mods.harvester.events;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import net.minecraft.block.Block;
@@ -8,25 +8,62 @@ import net.minecraft.block.BlockPotato;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.UseHoeEvent;
+import reforged.mods.harvester.HarvesterConfig;
+import reforged.mods.harvester.Utils;
+import reforged.mods.harvester.pos.BlockPos;
 
 import java.util.*;
 
-public class HarvestEvent {
+public class CropsEvent {
 
     @ForgeSubscribe
     public void onRightClick(PlayerInteractEvent e) {
+        if (!HarvesterConfig.HARVEST) return;
         if (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             EntityPlayer player = e.entityPlayer;
-            if (harvest(player, e.x, e.y, e.z)) {
-                e.setResult(Event.Result.ALLOW);
-                e.setCanceled(true);
+            if (!isHoe(player.getHeldItem())) {
+                if (harvest(player, e.x, e.y, e.z)) {
+                    e.setResult(Event.Result.ALLOW);
+                    e.setCanceled(true);
+                }
             }
         }
+    }
+
+    @ForgeSubscribe
+    public void onHoeUse(UseHoeEvent e) {
+        if (!HarvesterConfig.HARVEST) return;
+        EntityPlayer player = e.entityPlayer;
+        ItemStack hoeStack = player.getHeldItem();
+        int radius = getRadius(hoeStack);
+        BlockPos pos = new BlockPos(e.x, e.y, e.z);
+        for (BlockPos crop : BlockPos.getAllInBoxMutable(pos.add(-radius, 0, -radius), pos.add(radius, 0, radius))) {
+            if (harvest(player, crop.getX(), crop.getY(), crop.getZ())) {
+                e.setResult(Event.Result.ALLOW);
+            }
+        }
+    }
+
+    public boolean isHoe(ItemStack heldStack) {
+        return heldStack != null && (heldStack.getItem() instanceof ItemHoe || heldStack.getItemName().toLowerCase().contains("hoe"));
+    }
+
+    public int getRadius(ItemStack heldStack) {
+        if (isHoe(heldStack)) {
+            if (heldStack.itemID == Item.hoeWood.itemID || heldStack.itemID == Item.hoeStone.itemID || heldStack.itemID == Item.hoeGold.itemID) {
+                return 1; // tier 1
+            } else if (heldStack.itemID == Item.hoeSteel.itemID || heldStack.itemID == Item.hoeDiamond.itemID) {
+                return 2; // tier 2
+            } else return 1;
+        }
+        return 0;
     }
 
     public boolean harvest(EntityPlayer player, int x, int y, int z) {

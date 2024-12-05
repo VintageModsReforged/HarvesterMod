@@ -10,6 +10,8 @@ import net.minecraft.item.Item;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import reforged.mods.harvester.events.CropsEvent;
+import reforged.mods.harvester.events.GrowthEvent;
 
 import java.util.logging.Logger;
 
@@ -19,7 +21,7 @@ public class HarvesterMod {
     public static final Logger LOGGER = Logger.getLogger("Harvester Mod");
 
     public HarvesterMod() {
-        MinecraftForge.EVENT_BUS.register(new HarvestEvent());
+        MinecraftForge.EVENT_BUS.register(new CropsEvent());
         MinecraftForge.EVENT_BUS.register(this);
         LOGGER.setParent(FMLLog.getLogger());
     }

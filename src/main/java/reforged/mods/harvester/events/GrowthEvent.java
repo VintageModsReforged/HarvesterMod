@@ -1,4 +1,4 @@
-package reforged.mods.harvester;
+package reforged.mods.harvester.events;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.ITickHandler;
@@ -14,6 +14,8 @@ import net.minecraftforge.common.ForgeHooks;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.entity.player.BonemealEvent;
+import reforged.mods.harvester.HarvesterConfig;
+import reforged.mods.harvester.Utils;
 import reforged.mods.harvester.pos.BlockPos;
 
 import java.util.*;
@@ -25,6 +27,7 @@ public class GrowthEvent implements ITickHandler {
 
     @Override
     public void tickStart(EnumSet<TickType> enumSet, Object... objects) {
+        if (!HarvesterConfig.GROWTH) return;
         EntityPlayer player = (EntityPlayer) objects[0];
         if (FMLCommonHandler.instance().getEffectiveSide().isClient()) {
             return;
@@ -66,7 +69,7 @@ public class GrowthEvent implements ITickHandler {
         List<BlockPos> area = getNearestBlocks(world, origin);
         for (BlockPos pos : area) {
             applyBonemeal(new ItemStack(Item.dyePowder, 1, 3), world, pos.getX(), pos.getY(), pos.getZ(), player);
-            if (Loader.isModLoaded("IC2")) IC2CropHandler.handleIC2Crops(world, pos);
+            if (Loader.isModLoaded("IC2")) IC2CropsEvent.handleIC2Crops(world, pos);
         }
     }
 
@@ -82,7 +85,7 @@ public class GrowthEvent implements ITickHandler {
                 list.add(pos.toImmutable());
             }
             if (Loader.isModLoaded("IC2")) {
-                if (IC2CropHandler.isIC2Crop(block) && HarvesterConfig.IC2_CROPS) {
+                if (IC2CropsEvent.isIC2Crop(block) && HarvesterConfig.IC2_CROPS) {
                     list.add(pos.toImmutable());
                 }
             }

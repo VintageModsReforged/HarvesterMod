@@ -1,4 +1,4 @@
-package reforged.mods.harvester.asm;
+package reforged.mods.harvester.events;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLeavesBase;
@@ -8,13 +8,14 @@ import reforged.mods.harvester.pos.BlockPos;
 
 import java.util.Random;
 
-public class LeafDecayHandler {
+public class LeafDecayEvent {
 
     static Random rng = new Random();
     static int randomizationTime = HarvesterConfig.MIN_DECAY_TIME;
     static int baseDecayTime = HarvesterConfig.MAX_DECAY_TIME - HarvesterConfig.MIN_DECAY_TIME;
 
-    public static void handleLeafDecay(World world, int x, int y, int z) {
+    public static void onLeafDecay(World world, int x, int y, int z) {
+        if (!HarvesterConfig.LEAF_DECAY) return;
         int id = world.getBlockId(x, y, z);
         Block block = Block.blocksList[id];
         if (block != null) {
