@@ -11,6 +11,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.Event;
 import net.minecraftforge.event.ForgeSubscribe;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
+import net.minecraftforge.event.entity.player.UseHoeEvent;
 import reforged.mods.harvester.Utils;
 import reforged.mods.harvester.pos.BlockPos;
 
@@ -22,25 +23,30 @@ public class CropsEvent {
     public void onRightClick(PlayerInteractEvent e) {
         if (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK) {
             EntityPlayer player = e.entityPlayer;
-            ItemStack heldStack = player.getHeldItem();
-            int radius = getRadius(heldStack);
-            BlockPos pos = new BlockPos(e.x, e.y, e.z);
-            int harvested = 0;
-            for (BlockPos crop : BlockPos.getAllInBoxMutable(pos.add(-radius, 0, -radius), pos.add(radius, 0, radius))) {
-                if (harvest(player, crop.getX(), crop.getY(), crop.getZ())) {
+            if (!isHoe(player.getHeldItem())) {
+                if (harvest(player, e.x, e.y, e.z)) {
                     e.setResult(Event.Result.ALLOW);
-                    ++harvested;
+                    e.setCanceled(true);
                 }
             }
-            if (harvested > 0) {
-                if (isHoe(heldStack)) heldStack.damageItem(1, player);
-                e.setCanceled(true);
+        }
+    }
+
+    @ForgeSubscribe
+    public void onHoeUse(UseHoeEvent e) {
+        EntityPlayer player = e.entityPlayer;
+        ItemStack hoeStack = player.getHeldItem();
+        int radius = getRadius(hoeStack);
+        BlockPos pos = new BlockPos(e.x, e.y, e.z);
+        for (BlockPos crop : BlockPos.getAllInBoxMutable(pos.add(-radius, 0, -radius), pos.add(radius, 0, radius))) {
+            if (harvest(player, crop.getX(), crop.getY(), crop.getZ())) {
+                e.setResult(Event.Result.ALLOW);
             }
         }
     }
 
     public boolean isHoe(ItemStack heldStack) {
-        return heldStack != null && heldStack.getItem() instanceof ItemHoe;
+        return heldStack != null && (heldStack.getItem() instanceof ItemHoe || heldStack.getItemName().toLowerCase().contains("hoe"));
     }
 
     public int getRadius(ItemStack heldStack) {
@@ -49,7 +55,7 @@ public class CropsEvent {
                 return 1; // tier 1
             } else if (heldStack.itemID == Item.hoeIron.itemID || heldStack.itemID == Item.hoeDiamond.itemID) {
                 return 2; // tier 2
-            }
+            } else return 1;
         }
         return 0;
     }
