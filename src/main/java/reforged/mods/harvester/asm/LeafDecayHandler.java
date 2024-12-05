@@ -15,6 +15,7 @@ public class LeafDecayHandler {
     static int baseDecayTime = HarvesterConfig.MAX_DECAY_TIME - HarvesterConfig.MIN_DECAY_TIME;
 
     public static void handleLeafDecay(World world, int x, int y, int z) {
+        if (!HarvesterConfig.LEAF_DECAY) return;
         int id = world.getBlockId(x, y, z);
         Block block = Block.blocksList[id];
         if (block != null) {
