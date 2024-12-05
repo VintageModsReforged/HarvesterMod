@@ -39,8 +39,8 @@ public class HarvesterConfig {
         TREE_CAPITATOR = getBoolean("main - capitator", "TreeCapitator", true, "Enable TreeCapitator feature?");
         CAPITATOR_MAX_COUNT = getInt("main - capitator", "CapitatorMaxCount", 0, Integer.MAX_VALUE, 256, "TreeCapitator Max Harvest Count");
         IGNORE_DURABILITY = getBoolean("main - capitator", "IgnoreDurability", true, "Ignore tool's durability when chopping down a tree, meaning it will continue harvesting it even if the durability is low." +
-                "\nIF true, THIS WILL GLITCH THE TOOL AND MAKE IT SEEM LIKE IT HAS RESTORED DURABILITY, BUT THAT IS ONLY VISUAL AND NEXT HARVEST WILL BREAK IT!" +
-                "\nIf false, this will prevent harvesting once the durability is gone, meaning if the tree is big enough, the upper part  might be left unharvested. This is more unpleasant than having a glitched tool :D");
+                "\nIf true, the tree harvester will ignore tools' damage and will cut down the whole tree. E.g. Huge Jungle Tree can be harvested using Wooden Axe." +
+                "\nIf false, this will prevent harvesting once the durability is gone, meaning if the tree is big enough, the upper part  might be left unharvested.");
         LOGS = getString("main - capitator", "logs", new String[]{"thaumcraft.common.world.BlockMagicalLog"}, "Support for custom logs block that aren't instances of `BlockLog`. Enable debug and right click with a stick to get more info in the log.");
         LEAVES = getString("main - capitator", "leaves", new String[]{}, "Support for custom leaves block. This shouldn't be here, but just in case, for blocks that have their `isLeaves=false` for some reasons, but still are leaves... Enable debug and right click with a stick to get more info in the log.");
         if (MIN_DECAY_TIME >= MAX_DECAY_TIME) {

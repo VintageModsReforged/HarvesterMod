@@ -14,10 +14,7 @@ import reforged.mods.harvester.HarvesterConfig;
 import reforged.mods.harvester.Utils;
 import reforged.mods.harvester.pos.BlockPos;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class TreesEvent {
 
@@ -29,24 +26,27 @@ public class TreesEvent {
             BlockPos origin = new BlockPos(x, y, z);
             int maxCount = HarvesterConfig.CAPITATOR_MAX_COUNT;
             LinkedList<BlockPos> connectedLogs = scanForTree(world, origin, player.isSneaking() ? 0 : maxCount);
+
+            // Process each block but defer damage application
             for (BlockPos log : connectedLogs) {
                 Block logBlock = Utils.getBlock(world, log);
                 int id = Utils.getBlockId(world, log);
                 boolean isAxeHarvestable = heldStack.getItem() instanceof ItemAxe ||
                         (heldStack.getItem().getStrVsBlock(heldStack, logBlock) > 1F ||
-                        heldStack.getItem().getStrVsBlock(heldStack, logBlock, Utils.getBlockMetadata(world, log)) > 1F);
+                                heldStack.getItem().getStrVsBlock(heldStack, logBlock, Utils.getBlockMetadata(world, log)) > 1F);
                 if ((isAxeHarvestable || heldStack.getItem().canHarvestBlock(logBlock)) && Utils.harvestBlock(world, log.getX(), log.getY(), log.getZ(), player)) {
-                    /**
-                     *  Skip damaging first block, minecraft
-                     *  {@link net.minecraft.item.ItemInWorldManager#removeBlock(int, int, int)} already does that
-                     */
-                    if (!HarvesterConfig.IGNORE_DURABILITY) {
+                    if (!HarvesterConfig.IGNORE_DURABILITY) { // cut down the tree only for the actual durability of the tool
                         if (heldStack.getItemDamage() == heldStack.getMaxDamage()) {
                             break;
                         }
                     }
+
+                    // Skip damaging first block, Minecraft already does that
                     if (connectedLogs.indexOf(log) != 0) {
                         heldStack.getItem().onBlockDestroyed(heldStack, world, id, log.getX(), log.getY(), log.getZ(), player);
+                        if (heldStack.isItemStackDamageable() && heldStack.getItemDamage() >= heldStack.getMaxDamage()) {
+                            player.destroyCurrentEquippedItem();
+                        }
                     }
                 }
             }
