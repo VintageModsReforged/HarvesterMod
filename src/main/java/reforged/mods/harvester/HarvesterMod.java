@@ -15,7 +15,7 @@ import reforged.mods.harvester.events.GrowthEvent;
 
 import java.util.logging.Logger;
 
-@Mod(modid = "harvester", name = "Harvester Mod", version = "1.5.2-1.0.5.4")
+@Mod(modid = "harvester", name = "Harvester Mod", version = "1.5.2-1.0.5.5")
 public class HarvesterMod {
 
     public static final Logger LOGGER = Logger.getLogger("Harvester Mod");
