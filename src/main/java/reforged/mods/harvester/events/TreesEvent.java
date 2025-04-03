@@ -23,19 +23,14 @@ public class TreesEvent {
     public void onBlockHarvested(World world, int x, int y, int z, Block block, int metadata, EntityPlayer player) {
         if (!HarvesterConfig.TREE_CAPITATOR) return;
         ItemStack heldStack = player.getHeldItem();
-        if (heldStack != null && canHarvest(player, heldStack, block, metadata, new BlockPos(x, y, z))) {
+        if (heldStack != null) {
             BlockPos origin = new BlockPos(x, y, z);
             int maxCount = HarvesterConfig.CAPITATOR_MAX_COUNT;
             LinkedList<BlockPos> connectedLogs = scanForTree(world, origin, player.isSneaking() ? 0 : maxCount);
-
-            // Process each block but defer damage application
             for (BlockPos log : connectedLogs) {
                 Block logBlock = Utils.getBlock(world, log);
                 int id = Utils.getBlockId(world, log);
-                boolean isAxeHarvestable = heldStack.getItem() instanceof ItemAxe ||
-                        (heldStack.getItem().getStrVsBlock(heldStack, logBlock) > 1F ||
-                                heldStack.getItem().getStrVsBlock(heldStack, logBlock, Utils.getBlockMetadata(world, log)) > 1F);
-                if ((isAxeHarvestable || heldStack.getItem().canHarvestBlock(logBlock)) && Utils.harvestBlock(world, log.getX(), log.getY(), log.getZ(), player)) {
+                if (canHarvest(player, heldStack, logBlock, Utils.getBlockMetadata(world, log), log) && Utils.harvestBlock(world, log.getX(), log.getY(), log.getZ(), player)) {
                     if (!HarvesterConfig.IGNORE_DURABILITY) { // cut down the tree only for the actual durability of the tool
                         if (heldStack.getItemDamage() == heldStack.getMaxDamage()) {
                             break;
@@ -54,6 +49,13 @@ public class TreesEvent {
         }
     }
 
+    public boolean isAxe(World world, BlockPos pos, Block logBlock, ItemStack heldStack) {
+        return heldStack.getItem() instanceof ItemAxe ||
+                (heldStack.getItem().canHarvestBlock(logBlock) || heldStack.canHarvestBlock(logBlock))
+                || (heldStack.getItem().getStrVsBlock(heldStack, logBlock) > 1f || heldStack.getItem().getStrVsBlock(heldStack, logBlock, Utils.getBlockMetadata(world, pos)) > 1f)
+                || ForgeHooks.canToolHarvestBlock(logBlock, Utils.getBlockMetadata(world, pos), heldStack);
+    }
+
     public boolean canHarvest(EntityPlayer player, ItemStack stack, Block block, int meta, BlockPos pos) {
         if (!HarvesterConfig.TREE_CAPITATOR || Utils.isRendering()) {
             return false;
@@ -64,7 +66,7 @@ public class TreesEvent {
         if (player.isSneaking()) {
             return false;
         }
-        return ForgeHooks.canToolHarvestBlock(block, meta, stack) || stack.getItem() instanceof ItemAxe;
+        return isAxe(player.worldObj, pos, block, stack);
     }
 
     public boolean isLog(Block block, World world, BlockPos pos) {
