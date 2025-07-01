@@ -78,12 +78,12 @@ public class CropsEvent {
         if (clickedBlock instanceof BlockFlower) {
             BlockFlower flower = (BlockFlower) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
-            if (Loader.isModLoaded("chococraft") && Utils.isInstanceOf(flower, "chococraft.common.items.BlockGysahlStem")) {
-                if (stage == 4) {
-                    drops = flower.getBlockDropped(world, x, y, z, stage, 0);
-                    world.setBlockMetadataWithNotify(x, y, z, 0, 2);
-                    harvest = true;
-                }
+            boolean isNetherWart = flower instanceof BlockNetherStalk && stage >= 3;
+            boolean chocoCraftFlower = Loader.isModLoaded("chococraft") && Utils.isInstanceOf(flower, "chococraft.common.items.BlockGysahlStem") && stage == 4;
+            if (chocoCraftFlower || isNetherWart) {
+                drops = flower.getBlockDropped(world, x, y, z, stage, 0);
+                world.setBlockMetadataWithNotify(x, y, z, 0, 2);
+                harvest = true;
             }
         }
         if (clickedBlock instanceof BlockCrops && !Utils.isInstanceOf(clickedBlock, "mods.natura.blocks.crops.CropBlock")) { // only vanilla
@@ -101,10 +101,9 @@ public class CropsEvent {
             }
         }
         if (Loader.isModLoaded("Natura") && Utils.isInstanceOf(clickedBlock, "mods.natura.blocks.crops.CropBlock")) { // Natura
-            mods.natura.blocks.crops.CropBlock crop = (mods.natura.blocks.crops.CropBlock) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
             if (stage == 3) {
-                drops = crop.getBlockDropped(world, x, y, z, stage, 0);
+                drops = clickedBlock.getBlockDropped(world, x, y, z, stage, 0);
                 world.setBlockMetadataWithNotify(x, y, z, 0, 2);
                 harvest = true;
             }
