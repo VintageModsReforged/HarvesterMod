@@ -3,7 +3,7 @@
     "modid": "harvester",
     "name": "Vintage: Harvester",
     "description": "A reforged mod that provides right click harvesting and leaves decay.",
-    "version": "1.5.2-1.0.5.7",
+    "version": "1.5.2-1.0.5.8",
     "authors": ["CrossVas"]
   }
 ]
