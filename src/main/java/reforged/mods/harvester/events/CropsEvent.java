@@ -1,10 +1,8 @@
 package reforged.mods.harvester.events;
 
 import cpw.mods.fml.common.FMLCommonHandler;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockCocoa;
-import net.minecraft.block.BlockCrops;
-import net.minecraft.block.BlockPotato;
+import cpw.mods.fml.common.Loader;
+import net.minecraft.block.*;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -77,6 +75,19 @@ public class CropsEvent {
 
         List<ItemStack> drops = new ArrayList<ItemStack>();
         Map<Integer, Integer> sortedDropsStacks = new HashMap<Integer, Integer>();
+
+        if (clickedBlock instanceof BlockFlower) {
+            BlockFlower flower = (BlockFlower) clickedBlock;
+            int stage = world.getBlockMetadata(x, y, z);
+            boolean isNetherWart = flower instanceof BlockNetherStalk && stage >= 3;
+            boolean chocoCraftFlower = Loader.isModLoaded("chococraft") && Utils.isInstanceOf(flower, "chococraft.common.items.BlockGysahlStem") && stage == 4;
+            if (chocoCraftFlower || isNetherWart) {
+                drops = flower.getBlockDropped(world, x, y, z, stage, 0);
+                world.setBlockMetadataWithNotify(x, y, z, 0);
+                harvest = true;
+            }
+        }
+
         if (clickedBlock instanceof BlockCrops) {
             BlockCrops crop = (BlockCrops) clickedBlock;
             int stage = world.getBlockMetadata(x, y, z);
