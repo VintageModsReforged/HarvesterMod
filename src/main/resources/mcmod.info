@@ -1,9 +1,9 @@
 [
   {
-    "modid": "harvester",
-    "name": "Vintage: Harvester",
-    "description": "A reforged mod that provides right click harvesting and leaves decay.",
-    "version": "1.5.2-1.0.5.8",
-    "authors": ["CrossVas"]
+    "modid": "${modid}",
+    "name": "${modName}",
+    "description": "${modDescription}",
+    "version": "${modVersion}",
+    "authors": ["${modAuthors}"]
   }
 ]

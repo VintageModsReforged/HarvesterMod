@@ -49,6 +49,12 @@ dependencies {
 	forge "net.minecraftforge:forge:${forgeVersion}:universal@zip"
 	mappings "net.minecraftforge:forge:${forgeVersion}:src@zip"
 
-//	modImplementation files("/libs/Natura_1.5.2_2.1.5.1.jar")
 	modImplementation files("/libs/industrialcraft-2_1.117.385-lf.jar")
+}
+
+def props = ['modName', 'modid', 'modVersion', 'modDescription', 'modAuthors']
+processResources {
+	filesMatching("mcmod.info") {
+		expand(project.properties.subMap(props))
+	}
 }
