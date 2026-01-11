@@ -1,8 +1,7 @@
 package reforged.mods.harvester.events;
 
-import cpw.mods.fml.common.Loader;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLeavesBase;
+import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockLog;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemAxe;
@@ -79,29 +78,11 @@ public class TreesEvent {
         return block instanceof BlockLog || block.isWood(world, pos.getX(), pos.getY(), pos.getZ()) || configLogs;
     }
 
-    public boolean isLeaves(World world, BlockPos pos) {
+    public static boolean isNaturalLeaf(World world, BlockPos pos) {
         Block block = Utils.getBlock(world, pos);
-        String[] leaves = HarvesterConfig.LEAVES;
-        boolean configLeaves = false;
-        for (String leave : leaves) {
-            if (Utils.isInstanceOf(block, leave)) configLeaves = true;
-            break;
-        }
-        return getBOPStatus(world, pos) || configLeaves;
-    }
-
-    private boolean getBOPStatus(World world, BlockPos pos) {
-        int meta = Utils.getBlockMetadata(world, pos) | 8;
-        Block block = Utils.getBlock(world, pos);
-        if (Loader.isModLoaded("BiomesOPlenty")) {
-            if (Utils.isInstanceOf(block, "biomesoplenty.blocks.BlockBOPPetals") ||
-                    Utils.isInstanceOf(block, "biomesoplenty.blocks.BlockBOPLeaves") ||
-                    Utils.isInstanceOf(block, "biomesoplenty.blocks.BlockBOPColorizedLeaves") ||
-                    Utils.isInstanceOf(block, "biomesoplenty.blocks.BlockBOPAppleLeaves")) {
-                return meta >= 8 && meta <= 15;
-            }
-        }
-        return false;
+        if (!(block instanceof BlockLeaves)) return false;
+        int meta = world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
+        return (meta & 4) == 0;
     }
 
     private interface BlockAction {
@@ -127,10 +108,9 @@ public class TreesEvent {
         VeinSearchResult result = recursiveSearch(world, startPos, new BlockAction() {
             @Override
             public boolean onBlock(BlockPos pos, Block block, boolean isRightBlock) {
-                int metadata = Utils.getBlockMetadata(world, pos) | 8;
-                boolean isLeave = metadata >= 8 && metadata <= 11;
-                boolean vanillaLeaves = isLeave && block instanceof BlockLeavesBase;
-                if (block.isLeaves(world, pos.getX(), pos.getY(), pos.getZ()) || vanillaLeaves || isLeaves(world, pos)) leavesFound[0] = true;
+                if (isNaturalLeaf(world, pos)) {
+                    leavesFound[0] = true;
+                }
                 return true;
             }
         });
@@ -138,7 +118,7 @@ public class TreesEvent {
             return result;
         }
         if (!leavesFound[0]) {
-            return VeinSearchResult.NULL;
+            return VeinSearchResult.NO_LEAVES;
         }
 
         return result;

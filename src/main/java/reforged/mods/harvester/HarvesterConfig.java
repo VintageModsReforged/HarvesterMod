@@ -21,7 +21,6 @@ public class HarvesterConfig {
     // tree capitator
     public static int CAPITATOR_MAX_COUNT;
     public static boolean IGNORE_DURABILITY;
-    public static String[] LEAVES;
     public static String[] LOGS;
     // leaf decay
     public static int MIN_DECAY_TIME;
@@ -50,7 +49,6 @@ public class HarvesterConfig {
         IGNORE_DURABILITY = getBoolean("TreeCapitator", "ignoreDurability", true, "Ignore tool's durability when chopping down a tree, meaning it will continue harvesting it even if the durability is low." +
                 "\nIf true, the tree harvester will ignore tools' damage and will cut down the whole tree. E.g. Huge Jungle Tree can be harvested using Wooden Axe." +
                 "\nIf false, this will prevent harvesting once the durability is gone, meaning if the tree is big enough, the upper part  might be left unharvested.");
-        LEAVES = getString("TreeCapitator", "leaves", new String[]{}, "Support for custom leaves block. Enable debug and right click with a stick to get more info in the log.");
         LOGS = getString("TreeCapitator", "logs", new String[]{"thaumcraft.common.world.BlockMagicalLog"}, "Support for custom logs. Enable debug and right click with a stick to get more info in the log.");
         // leaf decay
         MIN_DECAY_TIME = getInt("LeafDecay", "minimumDecayTime", 0, Integer.MAX_VALUE, 4, "Minimum time in ticks for leaf decay. Must be lower than MaximumDecayTime!");
