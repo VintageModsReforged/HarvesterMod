@@ -14,10 +14,10 @@ apply plugin: "agency.highlysuspect.voldeloom"
 java.toolchain.languageVersion = JavaLanguageVersion.of(11) //Last version able to set a --release as low as 6
 compileJava.options.release.set(6) //Forge doesn't understand classes compiled to versions of the class-file format newer than Java 6's
 
-String minecraftVersion = "1.4.7"
-String forgeVersion = "1.4.7-6.6.2.534"
+String minecraftVersion = project.minecraft
+String forgeVersion = project.minecraft_forge
 archivesBaseName = project.modid
-version = project.mod_version
+version = project.modVersion
 
 volde {
 	forgeCapabilities {
@@ -33,7 +33,7 @@ volde {
 
 	runs {
 		client {
-			programArg "quaternary"
+			programArg "Dev"
 			programArg "-Dfml.coreMods.load=reforged.mods.harvester.asm.LeafDecayPlugin"
 		}
 	}
@@ -60,4 +60,20 @@ dependencies {
 	modImplementation files("libs/redpowerdigital.zip")
 	modImplementation files("libs/redpowercompat.zip")
 	modImplementation files("libs/industrialcraft-2_1.115.207-lf.jar")
+}
+
+def props = ['modName', 'modid', 'modVersion', 'modDescription', 'modAuthors', 'modDeps', 'minecraft', 'url']
+processResources {
+	filesMatching("mcmod.info") {
+		expand(project.properties.subMap(props))
+	}
+}
+
+task sourcesJar(type: Jar) {
+	archiveClassifier.set("sources")
+	from sourceSets.main.allSource
+}
+
+artifacts {
+	archives sourcesJar
 }
