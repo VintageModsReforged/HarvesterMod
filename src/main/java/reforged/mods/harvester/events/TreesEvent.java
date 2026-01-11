@@ -1,8 +1,7 @@
 package reforged.mods.harvester.events;
 
-import cpw.mods.fml.common.Loader;
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLeavesBase;
+import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockLog;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemAxe;
@@ -12,12 +11,10 @@ import net.minecraftforge.common.ForgeHooks;
 import org.jetbrains.annotations.Nullable;
 import reforged.mods.harvester.HarvesterConfig;
 import reforged.mods.harvester.Utils;
+import reforged.mods.harvester.VeinSearchResult;
 import reforged.mods.harvester.pos.BlockPos;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class TreesEvent {
 
@@ -28,8 +25,7 @@ public class TreesEvent {
         ItemStack heldStack = player.getHeldItem();
         if (heldStack != null && canHarvest(player, heldStack, block, metadata, new BlockPos(x, y, z))) {
             BlockPos origin = new BlockPos(x, y, z);
-            int maxCount = HarvesterConfig.CAPITATOR_MAX_COUNT;
-            LinkedList<BlockPos> connectedLogs = scanForTree(world, origin, player.isSneaking() ? 0 : maxCount);
+            List<BlockPos> connectedLogs = scanForTree(world, origin).getPositions();
             for (BlockPos log : connectedLogs) {
                 Block logBlock = Utils.getBlock(world, log);
                 int id = Utils.getBlockId(world, log);
@@ -82,41 +78,23 @@ public class TreesEvent {
         return block instanceof BlockLog || block.isWood(world, pos.getX(), pos.getY(), pos.getZ()) || configLogs;
     }
 
-    public boolean isLeaves(World world, BlockPos pos) {
+    public static boolean isNaturalLeaf(World world, BlockPos pos) {
         Block block = Utils.getBlock(world, pos);
-        String[] leaves = HarvesterConfig.LEAVES;
-        boolean configLeaves = false;
-        for (String leave : leaves) {
-            if (Utils.isInstanceOf(block, leave)) configLeaves = true;
-            break;
-        }
-        return getBOPStatus(world, pos) || configLeaves;
-    }
-
-    private boolean getBOPStatus(World world, BlockPos pos) {
-        int meta = Utils.getBlockMetadata(world, pos) | 8;
-        Block block = Utils.getBlock(world, pos);
-        if (Loader.isModLoaded("BiomesOPlenty")) {
-            if (Utils.isInstanceOf(block, "biomesoplenty.blocks.BlockBOPPetals") ||
-                    Utils.isInstanceOf(block, "biomesoplenty.blocks.BlockBOPLeaves") ||
-                    Utils.isInstanceOf(block, "biomesoplenty.blocks.BlockBOPColorizedLeaves") ||
-                    Utils.isInstanceOf(block, "biomesoplenty.blocks.BlockBOPAppleLeaves")) {
-                return meta >= 8 && meta <= 15;
-            }
-        }
-        return false;
+        if (!(block instanceof BlockLeaves)) return false;
+        int meta = world.getBlockMetadata(pos.getX(), pos.getY(), pos.getZ());
+        return (meta & 4) == 0;
     }
 
     private interface BlockAction {
         boolean onBlock(BlockPos pos, Block block, boolean isRightBlock);
     }
 
-    public LinkedList<BlockPos> scanForTree(final World world, final BlockPos startPos, int limit) {
-        Block block = Block.blocksList[world.getBlockId(startPos.getX(), startPos.getY(), startPos.getZ())];
+    public VeinSearchResult scanForTree(final World world, final BlockPos startPos) {
+        Block block = Utils.getBlock(world, startPos);
         ItemStack blockStack = new ItemStack(block, 1, 32767);
         boolean isLog = false;
         List<ItemStack> logs = Utils.getStackFromOre("log");
-        logs.addAll(Utils.getStackFromOre("wood")); // just in case some mod uses old oredict name
+        logs.addAll(Utils.getStackFromOre("wood"));
         for (ItemStack check : logs) {
             if (Utils.areStacksEqual(check, blockStack) || isLog(block, world, startPos)) {
                 isLog = true;
@@ -124,62 +102,72 @@ public class TreesEvent {
             }
         }
         if (!isLog) {
-            return new LinkedList<BlockPos>();
+            return VeinSearchResult.abort(VeinSearchResult.Type.ABORT_NULL);
         }
         final boolean[] leavesFound = new boolean[1];
-        LinkedList<BlockPos> result = recursiveSearch(world, startPos, new BlockAction() {
+        VeinSearchResult result = recursiveSearch(world, startPos, new BlockAction() {
             @Override
             public boolean onBlock(BlockPos pos, Block block, boolean isRightBlock) {
-                int metadata = Utils.getBlockMetadata(world, pos) | 8;
-                boolean isLeave = metadata >= 8 && metadata <= 11;
-                boolean vanillaLeaves = isLeave && block instanceof BlockLeavesBase;
-                if (vanillaLeaves) {
+                if (isNaturalLeaf(world, pos)) {
                     leavesFound[0] = true;
-                } else if (block.isLeaves(world, pos.getX(), pos.getY(), pos.getZ()) || isLeaves(world, pos)) leavesFound[0] = true;
+                }
                 return true;
             }
-        }, limit);
-        return leavesFound[0] ? result : new LinkedList<BlockPos>();
+        });
+        if (result.getType() == VeinSearchResult.Type.ABORT_OVER_LIMIT) {
+            return result;
+        }
+        if (!leavesFound[0]) {
+            return VeinSearchResult.NO_LEAVES;
+        }
+
+        return result;
     }
 
     // Recursively scan 3x3x3 cubes while keeping track of already scanned blocks to avoid cycles.
-    private static LinkedList<BlockPos> recursiveSearch(final World world, final BlockPos start, @Nullable final BlockAction action, int limit) {
+    private VeinSearchResult recursiveSearch(final World world, final BlockPos start, @Nullable final BlockAction action) {
         Block wantedBlock = Utils.getBlock(world, start);
-        boolean abort = false;
-        final LinkedList<BlockPos> result = new LinkedList<BlockPos>();
         final Set<BlockPos> visited = new HashSet<BlockPos>();
-        final LinkedList<BlockPos> queue = new LinkedList<BlockPos>();
-        queue.push(start);
+        final List<BlockPos> result = new ArrayList<BlockPos>();
+        final Deque<BlockPos> queue = new ArrayDeque<BlockPos>();
+        if (!Utils.isAir(world, start)) {
+            visited.add(start.toImmutable());
+            result.add(start);
+            queue.push(start);
+            if (action != null && !action.onBlock(start, wantedBlock, true)) {
+                return VeinSearchResult.NO_LEAVES;
+            }
+        } else {
+            return VeinSearchResult.NULL;
+        }
 
         while (!queue.isEmpty()) {
             final BlockPos center = queue.pop();
             final int x0 = center.getX();
             final int y0 = center.getY();
             final int z0 = center.getZ();
-            for (int z = z0 - 1; z <= z0 + 1 && !abort; ++z) {
-                for (int y = y0 - 1; y <= y0 + 1 && !abort; ++y) {
-                    for (int x = x0 - 1; x <= x0 + 1 && !abort; ++x) {
+            for (int z = z0 - 1; z <= z0 + 1; ++z) {
+                for (int y = y0 - 1; y <= y0 + 1; ++y) {
+                    for (int x = x0 - 1; x <= x0 + 1; ++x) {
                         final BlockPos pos = new BlockPos(x, y, z);
+                        if (!visited.add(pos.toImmutable()) || Utils.isAir(world, pos)) continue;
                         Block checkBlock = Utils.getBlock(world, pos);
-                        if ((Utils.isAir(world, pos) || !visited.add(pos))) {
-                            continue;
-                        }
                         final boolean isRightBlock = checkBlock.blockID == wantedBlock.blockID;
                         if (isRightBlock) {
-                            result.add(pos);
-                            if (queue.size() > limit) {
-                                abort = true;
-                                break;
+                            if (result.size() >= HarvesterConfig.CAPITATOR_MAX_COUNT) {
+                                return VeinSearchResult.OVER_LIMIT;
                             }
+                            result.add(pos);
                             queue.push(pos);
                         }
-                        if (action != null) {
-                            abort = !action.onBlock(pos, checkBlock, isRightBlock);
+
+                        if (action != null && !action.onBlock(pos, checkBlock, isRightBlock)) {
+                            return VeinSearchResult.NO_LEAVES;
                         }
                     }
                 }
             }
         }
-        return !abort ? result : new LinkedList<BlockPos>();
+        return VeinSearchResult.success(result);
     }
 }
